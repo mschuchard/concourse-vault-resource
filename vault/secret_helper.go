@@ -1,0 +1,105 @@
+package vault
+
+import (
+	"context"
+	"log"
+	"strconv"
+	"time"
+
+	vault "github.com/hashicorp/vault/api"
+)
+
+// generate credentials
+func (secret *vaultSecret) generateCredentials(client *vault.Client) (map[string]interface{}, string, Metadata, error) {
+	// initialize api endpoint for cred generation
+	endpoint := secret.mount + "/creds/" + secret.path
+	// GET the secret from the API endpoint
+	response, err := client.Logical().Read(endpoint)
+	if err != nil {
+		log.Printf("failed to generate credentials for %s with %s secrets engine", secret.path, secret.engine)
+		log.Print(err)
+		return map[string]interface{}{}, "0", Metadata{}, err
+	}
+	// calculate the expiration time for version
+	expirationTime := time.Now().Local().Add(time.Second * time.Duration(response.LeaseDuration))
+
+	// return secret value implicitly coerced to map[string]interface{}, expiration time as version, and metadata
+	return response.Data, expirationTime.String(), rawSecretToMetadata(response), nil
+}
+
+// retrieve key-value pair secrets
+func (secret *vaultSecret) retrieveKVSecret(client *vault.Client, version string) (map[string]interface{}, string, Metadata, error) {
+	// declare error for return to cmd, and kvSecret for metadata.version and raw secret assignments and returns
+	var err error
+	var kvSecret *vault.KVSecret
+
+	switch secret.engine {
+	case keyvalue1:
+		if len(version) > 0 {
+			log.Print("versions cannot be used with the KV1 secrets engine")
+		}
+		// read kv secret
+		kvSecret, err = client.KVv1(secret.mount).Get(
+			context.Background(),
+			secret.path,
+		)
+		// instantiate dummy metadata if secret successfully retrieved
+		if err == nil && kvSecret != nil {
+			kvSecret.VersionMetadata = &vault.KVVersionMetadata{Version: 0}
+		}
+	case keyvalue2:
+		// read latest kv2 secret
+		if len(version) == 0 {
+			kvSecret, err = client.KVv2(secret.mount).Get(
+				context.Background(),
+				secret.path,
+			)
+		} else { // read specific version of kv2 secret
+			// validate version if input
+			versionInt, err := strconv.Atoi(version)
+			if err != nil {
+				log.Printf("KV2 version must be an integer, and %s was input instead", version)
+				// return empty values since error triggers at end of execution
+				return map[string]interface{}{}, "0", Metadata{}, err
+			}
+
+			kvSecret, err = client.KVv2(secret.mount).GetVersion(
+				context.Background(),
+				secret.path,
+				versionInt,
+			)
+			if err != nil {
+				log.Printf("the KV2 secret at %s/%s could not be retrieved for version %d", secret.mount, secret.path, versionInt)
+				// return empty values since error triggers at end of execution
+				return map[string]interface{}{}, "0", Metadata{}, err
+			}
+		}
+	default:
+		log.Fatalf("an invalid secret engine %s was selected", secret.engine)
+	}
+
+	// verify secret read
+	if err != nil || kvSecret == nil {
+		log.Printf("failed to read secret at mount %s and path %s from %s secrets engine", secret.mount, secret.path, secret.engine)
+		log.Print(err)
+		// return empty values since error triggers at end of execution
+		return map[string]interface{}{}, "0", Metadata{}, err
+	} else if kvSecret.Data == nil { // verify version exists
+		log.Printf("the input version %s (0 signifies latest) does not exist for the secret at mount %s and path %s from %s secrets engine", version, secret.mount, secret.path, secret.engine)
+		// return partial information values since error triggers at end of execution
+		return map[string]interface{}{}, version, rawSecretToMetadata(kvSecret.Raw), err
+	}
+
+	// return secret value and implicitly coerce type to map[string]interface{}
+	return kvSecret.Data, strconv.Itoa(kvSecret.VersionMetadata.Version), rawSecretToMetadata(kvSecret.Raw), nil
+}
+
+// convert *vault.Secret raw secret to secret metadata
+func rawSecretToMetadata(rawSecret *vault.Secret) Metadata {
+	// returne metadata with fields populated from raw secret
+	return Metadata{
+		LeaseID:       rawSecret.LeaseID,
+		LeaseDuration: strconv.Itoa(rawSecret.LeaseDuration),
+		Renewable:     strconv.FormatBool(rawSecret.Renewable),
+	}
+}

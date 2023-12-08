@@ -1,0 +1,12 @@
+{
+  "source": {
+    "address": "http://localhost:8200",
+    "auth_engine": "token",
+    "token": "abcdefghijklmnopqrstuvwxyz09",
+    "secret": {
+      "engine": "kv2",
+      "mount": "secret",
+      "path": "foo/bar"
+    }
+  }
+}

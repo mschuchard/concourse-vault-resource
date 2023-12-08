@@ -1,0 +1,29 @@
+{
+  "source": {
+    "address": "http://localhost:8200",
+    "auth_engine": "token",
+    "token": "abcdefghijklmnopqrstuvwxyz09"
+  },
+  "params": {
+    "secret": {
+      "secrets": {
+        "thefoo": {
+          "newpassword": "newsecret",
+          "newerpassword": "newersecret"
+        }
+      },
+      "engine": "kv2"
+    },
+    "kv": {
+      "secrets": {
+        "thebar": {
+          "key": "value"
+        },
+        "thebaz": {
+          "key": "value"
+        }
+      },
+      "engine": "kv1"
+    }
+  }
+}
