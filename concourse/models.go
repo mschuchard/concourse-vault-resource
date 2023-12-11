@@ -6,8 +6,6 @@ import (
 	"log"
 )
 
-// TODO https://itnext.io/how-to-use-golang-generics-with-structs-8cabc9353d75
-
 // custom type structs
 // key-value pairs would be arbitrary for kv1 and kv2, but are standardized schema for credential generators
 type secretValue map[string]interface{}
@@ -29,7 +27,6 @@ type secrets struct {
 	Renew  bool     `json:"renew"`
 }
 
-// TODO potentially combine both below with above by converting Paths to any (also probably rename) and doing a bunch of type checks BUT wow that seems like not great cost/benefit
 type secretsPut struct {
 	Engine string `json:"engine"`
 	Patch  bool   `json:"patch"`
@@ -43,7 +40,6 @@ type SecretSource struct {
 	Path   string `json:"path"`
 }
 
-// TODO: for future fine-tuning of secret value (enum?)
 type dbSecretValue struct {
 	Username string `json:"username"`
 	Password string `json:"password"`

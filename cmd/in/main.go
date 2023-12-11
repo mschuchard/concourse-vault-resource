@@ -59,7 +59,7 @@ func main() {
 		inResponse.Metadata = append(inResponse.Metadata, helper.VaultToConcourseMetadata(identifier, secretMetadata)...)
 	}
 
-	// fatally exit if any secret Read operation failed TODO non nil can be overwritten by later nil
+	// fatally exit if any secret Read operation failed
 	if err != nil {
 		log.Fatal("one or more attempted secret Read operations failed")
 	}

@@ -170,7 +170,7 @@ func (secret *vaultSecret) Renew(client *vault.Client, leaseIdSuffix string) (st
 		return "0", Metadata{}, nil
 	}
 
-	// determine full lease id TODO expand once more engines supported
+	// determine full lease id
 	leaseId := secret.mount + "/creds/" + leaseIdSuffix
 
 	// renew the secret lease

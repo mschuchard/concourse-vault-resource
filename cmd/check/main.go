@@ -17,7 +17,7 @@ func main() {
 	checkRequest := concourse.NewCheckRequest(os.Stdin)
 	secretSource := checkRequest.Source.Secret
 
-	// return immediately if secret unspecified in source TODO unblock dynamic later
+	// return immediately if secret unspecified in source
 	if secretSource == (concourse.SecretSource{}) || secretSource.Engine != "kv2" {
 		// dummy check response
 		dummyResponse := concourse.NewCheckResponse([]concourse.Version{concourse.Version{Version: "0"}})
