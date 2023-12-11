@@ -1,10 +1,10 @@
 module github.com/mitodl/concourse-vault-resource
 
-go 1.19
+go 1.20
 
 require (
-	github.com/hashicorp/vault/api v1.9.2
-	github.com/hashicorp/vault/api/auth/aws v0.4.1
+	github.com/hashicorp/vault/api v1.10.0
+	github.com/hashicorp/vault/api/auth/aws v0.5.0
 )
 
 require (
