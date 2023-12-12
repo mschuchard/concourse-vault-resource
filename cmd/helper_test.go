@@ -6,16 +6,21 @@ import (
 
 	"github.com/mitodl/concourse-vault-resource/concourse"
 	"github.com/mitodl/concourse-vault-resource/vault"
+	"github.com/mitodl/concourse-vault-resource/vault/util"
 )
 
 // minimum coverage testing for helper functions
 func TestVaultClientFromSource(test *testing.T) {
-	source := concourse.Source{Token: "abcdefghijklmnopqrstuvwxyz09"}
-	VaultClientFromSource(source)
+	source := concourse.Source{Token: util.TestVaultToken}
+	client := VaultClientFromSource(source)
+	if client.Token() != util.TestVaultToken {
+		test.Error("vault client configured with parameters from concourse source was not authenticated with expected token from source parameters")
+		test.Errorf("actual token: %s, expected token: %s", client.Token(), util.TestVaultToken)
+	}
 }
 
 func TestSecretsToJsonFile(test *testing.T) {
-	secretValues := concourse.SecretValues{}
+	secretValues := concourse.SecretValues{"secretValue": {"key": "value"}}
 	SecretsToJsonFile(".", secretValues)
 	defer os.Remove("./vault.json")
 }

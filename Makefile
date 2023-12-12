@@ -7,7 +7,7 @@ tidy:
 	@go mod tidy
 
 get:
-	@go get github.com/mschuchard/concourse-vault-resource
+	@go get github.com/mitodl/concourse-vault-resource
 
 build: tidy
 	@go build -o check cmd/check/main.go

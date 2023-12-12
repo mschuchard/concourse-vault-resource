@@ -20,7 +20,7 @@ func main() {
 	// return immediately if secret unspecified in source
 	if secretSource == (concourse.SecretSource{}) || secretSource.Engine != "kv2" {
 		// dummy check response
-		dummyResponse := concourse.NewCheckResponse([]concourse.Version{concourse.Version{Version: "0"}})
+		dummyResponse := concourse.NewCheckResponse([]concourse.Version{{Version: "0"}})
 		// format checkResponse into json
 		if err := json.NewEncoder(os.Stdout).Encode(&dummyResponse); err != nil {
 			log.Print("unable to marshal dummy check response struct to JSON")
@@ -49,14 +49,14 @@ func main() {
 
 	// if getVersion could not be converted to int then just use the original string
 	if err != nil {
-		versions = []concourse.Version{concourse.Version{Version: getVersion}}
+		versions = []concourse.Version{{Version: getVersion}}
 	} else {
 		// validate that the input version is <= the latest retrieved version
 		if inputVersion > getVersionInt {
 			log.Printf("the input version %d is later than the retrieved version %s", inputVersion, getVersion)
 			log.Print("only the retrieved version will be returned to Concourse")
 
-			versions = []concourse.Version{concourse.Version{Version: getVersion}}
+			versions = []concourse.Version{{Version: getVersion}}
 		} else {
 			// populate versions slice with delta
 			for versionDelta := inputVersion; versionDelta <= getVersionInt; versionDelta++ {
