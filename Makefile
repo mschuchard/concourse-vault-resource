@@ -29,3 +29,6 @@ shutdown:
 
 unit:
 	@go test -v ./...
+
+resource:
+	@docker build -t mitodl/concourse-vault-resource -t mitodl/concourse-vault-resource:${VERSION_TAG} .

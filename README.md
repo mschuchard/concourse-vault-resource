@@ -127,7 +127,7 @@ secret-foo/bar:
   patch: <boolean> # default: false; also see below
 ```
 
-Although optimally `patch` would be specified per path, this would be cumbersome in both implementation and usage, and therefore it is specified for all paths for a given `mount`. When `patch` is specified as `true`, then (from [Vault API PKG doc](https://pkg.go.dev/github.com/hashicorp/vault/api#KVv2.Patch)):
+Although optimally `patch` would be specified per path, this would be cumbersome in both implementation and usage, and therefore it is specified for all paths for a given `mount`. When `patch` is specified as `true`, then (from [Vault API PKG documentation](https://pkg.go.dev/github.com/hashicorp/vault/api#KVv2.Patch)):
 
 > Patch additively updates the most recent version of a key-value secret, differentiating it from Put which will fully overwrite the previous data. Only the key-value pairs that are new or changing need to be provided.
 
