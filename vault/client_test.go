@@ -26,11 +26,25 @@ func TestNewVaultConfig(test *testing.T) {
 		test.Errorf("expected AWS Mount Path: (empty), actual: %s", basicVaultConfig.AWSMountPath)
 		test.Errorf("expected AWS IAM Role: (empty), actual: %s", basicVaultConfig.AWSRole)
 		test.Errorf("expected Vault Token: %s, actual: %s", util.TestVaultToken, basicVaultConfig.Token)
-		test.Errorf("expected Vault Insecure: %t, actual: %t", basicVaultConfig.Insecure, basicVaultConfig.Insecure)
+		test.Errorf("expected Vault Insecure: true, actual: %t", basicVaultConfig.Insecure)
+	}
+
+	awsVaultConfig := &VaultConfig{
+		Address: "https://192.168.9.10",
+		AWSRole: "myIAMRole",
+	}
+	awsVaultConfig.New()
+
+	if awsVaultConfig.Engine != awsIam || awsVaultConfig.Address != "https://192.168.9.10" || awsVaultConfig.AWSMountPath != "aws" || awsVaultConfig.AWSRole != "myIAMRole" || len(awsVaultConfig.Token) != 0 || awsVaultConfig.Insecure {
+		test.Error("the Vault config constructor returned unexpected values.")
+		test.Errorf("expected Auth Engine: %s, actual: %s", awsIam, awsVaultConfig.Engine)
+		test.Errorf("expected Vault Address: https://192.168.9.10, actual: %s", awsVaultConfig.Address)
+		test.Errorf("expected AWS Mount Path: aws, actual: %s", awsVaultConfig.AWSMountPath)
+		test.Errorf("expected AWS IAM Role: myIAMRole, actual: %s", awsVaultConfig.AWSRole)
+		test.Errorf("expected Vault Token: (empty), actual: %s", awsVaultConfig.Token)
+		test.Errorf("expected Vault Insecure: false, actual: %t", awsVaultConfig.Insecure)
 	}
 }
-
-// test client constructor error messages
 
 // test client token authentication
 func TestAuthClient(test *testing.T) {
