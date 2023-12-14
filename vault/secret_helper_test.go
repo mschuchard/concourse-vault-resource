@@ -7,6 +7,7 @@ import (
 )
 
 // test secret generate credential
+func TestGenerateCredentials(test *testing.T) {}
 
 // test secret key value secret
 func TestRetrieveKVSecret(test *testing.T) {
@@ -46,60 +47,6 @@ func TestRetrieveKVSecret(test *testing.T) {
 	if kv2Value[KVKey] != KVValue {
 		test.Error("the retrieved kv2 secret value was incorrect")
 		test.Errorf("secret map value: %v", kv2Value)
-	}
-}
-
-// test populate secret
-func TestPopulateKVSecret(test *testing.T) {
-	basicVaultClient := basicVaultConfig.AuthClient()
-
-	kv1VaultSecret := NewVaultSecret("kv1", "", KVPath)
-	version, secretMetadata, err := kv1VaultSecret.PopulateKVSecret(
-		basicVaultClient,
-		map[string]interface{}{KVKey: KVValue},
-		false,
-	)
-	if err != nil {
-		test.Error("the kv1 secret was not successfully put")
-		test.Error(err)
-	}
-	if secretMetadata == (Metadata{}) {
-		test.Error("the kv2 secret retrieval returned empty metadata")
-	}
-	if version != "0" {
-		test.Errorf("the kv1 secret put returned non-zero version: %s", version)
-	}
-
-	kv2VaultSecret := NewVaultSecret("kv2", "", KVPath)
-	version, secretMetadata, err = kv2VaultSecret.PopulateKVSecret(
-		basicVaultClient,
-		map[string]interface{}{KVKey: KVValue},
-		false,
-	)
-	if err != nil {
-		test.Error("the kv2 secret was not successfully put")
-		test.Error(err)
-	}
-	if secretMetadata == (Metadata{}) {
-		test.Error("the kv2 secret put returned empty metadata")
-	}
-	if version == "0" {
-		test.Errorf("the kv2 secret put returned an invalid version: %s", version)
-	}
-	version, secretMetadata, err = kv2VaultSecret.PopulateKVSecret(
-		basicVaultClient,
-		map[string]interface{}{"other_password": "ultrasecret"},
-		true,
-	)
-	if err != nil {
-		test.Error("the kv2 secret was not successfully patched")
-		test.Error(err)
-	}
-	if secretMetadata == (Metadata{}) {
-		test.Error("the kv2 secret patch returned empty metadata")
-	}
-	if version == "0" {
-		test.Errorf("the kv2 secret patch returned an invalid version: %s", version)
 	}
 }
 

@@ -30,7 +30,7 @@ func TestNewVaultConfig(test *testing.T) {
 	}
 }
 
-// test client error messages
+// test client constructor error messages
 
 // test client token authentication
 func TestAuthClient(test *testing.T) {
