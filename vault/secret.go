@@ -1,9 +1,7 @@
 package vault
 
 import (
-	"context"
 	"log"
-	"strconv"
 	"time"
 
 	vault "github.com/hashicorp/vault/api"
@@ -116,50 +114,7 @@ func (secret *vaultSecret) SecretValue(client *vault.Client, version string) (ma
 
 // populate key-value pair secrets and return version, metadata, and error (PUT+POST/UPDATE+CREATE/PATCH+WRITE)
 func (secret *vaultSecret) PopulateKVSecret(client *vault.Client, secretValue map[string]interface{}, patch bool) (string, Metadata, error) {
-	// declare error for return to cmd, and kvSecret for metadata.version and raw secret assignments and returns (with dummies for kv1)
-	var err error
-	kvSecret := &vault.KVSecret{
-		VersionMetadata: &vault.KVVersionMetadata{Version: 0},
-		Raw:             &vault.Secret{},
-	}
-
-	switch secret.engine {
-	case keyvalue1:
-		// put kv1 secret
-		err = client.KVv1(secret.mount).Put(
-			context.Background(),
-			secret.path,
-			secretValue,
-		)
-	case keyvalue2:
-		if patch {
-			// patch kv2 secret
-			kvSecret, err = client.KVv2(secret.mount).Patch(
-				context.Background(),
-				secret.path,
-				secretValue,
-			)
-		} else {
-			// put kv2 secret
-			kvSecret, err = client.KVv2(secret.mount).Put(
-				context.Background(),
-				secret.path,
-				secretValue,
-			)
-		}
-	default:
-		log.Fatalf("an invalid secret engine %s was selected", secret.engine)
-	}
-
-	// verify secret put
-	if err != nil {
-		log.Printf("failed to update secret %s into %s secrets Engine", secret.path, secret.engine)
-		log.Print(err)
-		return "0", Metadata{}, err
-	}
-
-	// return no error
-	return strconv.Itoa(kvSecret.VersionMetadata.Version), rawSecretToMetadata(kvSecret.Raw), nil
+	return secret.populateKVSecret(client, secretValue, patch)
 }
 
 // renew dynamic secret lease and return updated metadata
