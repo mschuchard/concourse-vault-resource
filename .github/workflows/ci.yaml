@@ -3,12 +3,12 @@ name: build
 
 on:
   push:
-    branches: [main]
+    branches: [master]
     paths:
     - '**.go'
     - 'go.mod'
   pull_request:
-    branches: [main]
+    branches: [master]
     paths:
     - '**.go'
     - 'go.mod'
