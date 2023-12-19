@@ -114,7 +114,15 @@ func (secret *vaultSecret) SecretValue(client *vault.Client, version string) (ma
 
 // populate key-value pair secrets and return version, metadata, and error (PUT+POST/UPDATE+CREATE/PATCH+WRITE)
 func (secret *vaultSecret) PopulateKVSecret(client *vault.Client, secretValue map[string]interface{}, patch bool) (string, Metadata, error) {
-	return secret.populateKVSecret(client, secretValue, patch)
+	switch secret.engine {
+	case keyvalue1:
+		return secret.populateKV1Secret(client, secretValue)
+	case keyvalue2:
+		return secret.populateKV2Secret(client, secretValue, patch)
+	default:
+		log.Fatalf("an invalid secret engine %s was selected", secret.engine)
+		return "0", Metadata{}, nil // unreachable code, but compile error otherwise
+	}
 }
 
 // renew dynamic secret lease and return updated metadata
