@@ -4,6 +4,8 @@ import (
 	"testing"
 
 	vault "github.com/hashicorp/vault/api"
+
+	"github.com/mitodl/concourse-vault-resource/vault/util"
 )
 
 // test secret generate credential
@@ -11,10 +13,8 @@ func TestGenerateCredentials(test *testing.T) {}
 
 // test secret key value secret
 func TestRetrieveKVSecret(test *testing.T) {
-	basicVaultClient := basicVaultConfig.AuthClient()
-
 	kv1VaultSecret := NewVaultSecret("kv1", "", KVPath)
-	kv1Value, version, secretMetadata, err := kv1VaultSecret.retrieveKVSecret(basicVaultClient, "")
+	kv1Value, version, secretMetadata, err := kv1VaultSecret.retrieveKVSecret(util.VaultClient, "")
 
 	if err != nil {
 		test.Error("kv1 secret retrieval failed")
@@ -32,7 +32,7 @@ func TestRetrieveKVSecret(test *testing.T) {
 	}
 
 	kv2VaultSecret := NewVaultSecret("kv2", KV2Mount, KVPath)
-	kv2Value, version, secretMetadata, err := kv2VaultSecret.retrieveKVSecret(basicVaultClient, "")
+	kv2Value, version, secretMetadata, err := kv2VaultSecret.retrieveKVSecret(util.VaultClient, "")
 
 	if err != nil {
 		test.Error("kv2 secret retrieval failed")
@@ -52,11 +52,9 @@ func TestRetrieveKVSecret(test *testing.T) {
 
 // test populate kv1 secret
 func TestPopulateKV1Secret(test *testing.T) {
-	basicVaultClient := basicVaultConfig.AuthClient()
-
 	kv1VaultSecret := NewVaultSecret("kv1", "", KVPath)
 	version, secretMetadata, err := kv1VaultSecret.populateKV1Secret(
-		basicVaultClient,
+		util.VaultClient,
 		map[string]interface{}{KVKey: KVValue},
 	)
 	if err != nil {
@@ -73,11 +71,9 @@ func TestPopulateKV1Secret(test *testing.T) {
 
 // test populate kv2 secret
 func TestPopulateKV2Secret(test *testing.T) {
-	basicVaultClient := basicVaultConfig.AuthClient()
-
 	kv2VaultSecret := NewVaultSecret("kv2", "", KVPath)
 	version, secretMetadata, err := kv2VaultSecret.populateKV2Secret(
-		basicVaultClient,
+		util.VaultClient,
 		map[string]interface{}{KVKey: KVValue},
 		false,
 	)
@@ -92,7 +88,7 @@ func TestPopulateKV2Secret(test *testing.T) {
 		test.Errorf("the kv2 secret put returned an invalid version: %s", version)
 	}
 	version, secretMetadata, err = kv2VaultSecret.populateKV2Secret(
-		basicVaultClient,
+		util.VaultClient,
 		map[string]interface{}{"other_password": "ultrasecret"},
 		true,
 	)
