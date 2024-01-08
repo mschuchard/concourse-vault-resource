@@ -11,11 +11,11 @@ import (
 
 // minimum coverage testing for helper functions
 func TestVaultClientFromSource(test *testing.T) {
-	source := concourse.Source{Token: util.TestVaultToken}
+	source := concourse.Source{Token: util.VaultToken}
 	client := VaultClientFromSource(source)
-	if client.Token() != util.TestVaultToken {
+	if client.Token() != util.VaultToken {
 		test.Error("vault client configured with parameters from concourse source was not authenticated with expected token from source parameters")
-		test.Errorf("actual token: %s, expected token: %s", client.Token(), util.TestVaultToken)
+		test.Errorf("actual token: %s, expected token: %s", client.Token(), util.VaultToken)
 	}
 }
 

@@ -10,8 +10,8 @@ import (
 )
 
 var basicVaultConfig = &VaultConfig{
-	Address:  util.TestVaultAddress,
-	Token:    util.TestVaultToken,
+	Address:  util.VaultAddress,
+	Token:    util.VaultToken,
 	Insecure: true,
 }
 
@@ -19,13 +19,13 @@ var basicVaultConfig = &VaultConfig{
 func TestNewVaultConfig(test *testing.T) {
 	basicVaultConfig.New()
 
-	if basicVaultConfig.Engine != token || basicVaultConfig.Address != util.TestVaultAddress || len(basicVaultConfig.AWSMountPath) != 0 || len(basicVaultConfig.AWSRole) != 0 || basicVaultConfig.Token != util.TestVaultToken || !basicVaultConfig.Insecure {
+	if basicVaultConfig.Engine != token || basicVaultConfig.Address != util.VaultAddress || len(basicVaultConfig.AWSMountPath) != 0 || len(basicVaultConfig.AWSRole) != 0 || basicVaultConfig.Token != util.VaultToken || !basicVaultConfig.Insecure {
 		test.Error("the Vault config constructor returned unexpected values.")
 		test.Errorf("expected Auth Engine: %s, actual: %s", token, basicVaultConfig.Engine)
-		test.Errorf("expected Vault Address: %s, actual: %s", util.TestVaultAddress, basicVaultConfig.Address)
+		test.Errorf("expected Vault Address: %s, actual: %s", util.VaultAddress, basicVaultConfig.Address)
 		test.Errorf("expected AWS Mount Path: (empty), actual: %s", basicVaultConfig.AWSMountPath)
 		test.Errorf("expected AWS IAM Role: (empty), actual: %s", basicVaultConfig.AWSRole)
-		test.Errorf("expected Vault Token: %s, actual: %s", util.TestVaultToken, basicVaultConfig.Token)
+		test.Errorf("expected Vault Token: %s, actual: %s", util.VaultToken, basicVaultConfig.Token)
 		test.Errorf("expected Vault Insecure: true, actual: %t", basicVaultConfig.Insecure)
 	}
 
@@ -50,9 +50,9 @@ func TestNewVaultConfig(test *testing.T) {
 func TestAuthClient(test *testing.T) {
 	basicVaultClient := basicVaultConfig.AuthClient()
 
-	if basicVaultClient.Token() != util.TestVaultToken {
+	if basicVaultClient.Token() != util.VaultToken {
 		test.Error("the authenticated Vault client return failed basic validation")
-		test.Errorf("expected Vault token: %s, actual: %s", util.TestVaultToken, basicVaultClient.Token())
+		test.Errorf("expected Vault token: %s, actual: %s", util.VaultToken, basicVaultClient.Token())
 	}
 }
 

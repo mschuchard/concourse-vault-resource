@@ -3,6 +3,7 @@ package vault
 import (
 	"context"
 	"log"
+	"net/url"
 
 	vault "github.com/hashicorp/vault/api"
 	auth "github.com/hashicorp/vault/api/auth/aws"
@@ -28,9 +29,14 @@ type VaultConfig struct {
 
 // VaultConfig constructor
 func (config *VaultConfig) New() {
-	// vault address
+	// vault address default
 	if len(config.Address) == 0 {
 		config.Address = "http://127.0.0.1:8200"
+	} else {
+		// vault address validation
+		if _, err := url.ParseRequestURI(config.Address); err != nil {
+			log.Fatalf("%s is not a valid Vault server address", config.Address)
+		}
 	}
 
 	// determine engine if unspecified and validate authentication parameters
@@ -63,15 +69,15 @@ func (config *VaultConfig) New() {
 // instantiate authenticated vault client with aws-iam or token auth
 func (config *VaultConfig) AuthClient() *vault.Client {
 	// initialize config
-	VaultConfig := &vault.Config{Address: config.Address}
-	err := VaultConfig.ConfigureTLS(&vault.TLSConfig{Insecure: config.Insecure})
+	vaultConfig := &vault.Config{Address: config.Address}
+	err := vaultConfig.ConfigureTLS(&vault.TLSConfig{Insecure: config.Insecure})
 	if err != nil {
 		log.Print("Vault TLS configuration failed to initialize")
 		log.Fatal(err)
 	}
 
 	// initialize client
-	client, err := vault.NewClient(VaultConfig)
+	client, err := vault.NewClient(vaultConfig)
 	if err != nil {
 		log.Print("Vault client failed to initialize")
 		log.Fatal(err)
