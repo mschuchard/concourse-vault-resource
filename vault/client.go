@@ -2,6 +2,7 @@ package vault
 
 import (
 	"context"
+	"errors"
 	"log"
 	"net/url"
 
@@ -28,23 +29,25 @@ type VaultConfig struct {
 }
 
 // VaultConfig constructor
-func (config *VaultConfig) New() {
+func (config *VaultConfig) New() error {
 	// vault address default
 	if len(config.Address) == 0 {
 		config.Address = "http://127.0.0.1:8200"
 	} else {
 		// vault address validation
 		if _, err := url.ParseRequestURI(config.Address); err != nil {
-			log.Fatalf("%s is not a valid Vault server address", config.Address)
+			log.Printf("%s is not a valid Vault server address", config.Address)
+			return err
 		}
 	}
 
 	// determine engine if unspecified and validate authentication parameters
 	if len(config.Engine) == 0 {
-		log.Print("Authentication engine for Vault not specified; using logic from other parameters to assist with determination")
+		log.Print("authentication engine for Vault not specified; using logic from other parameters to assist with determination")
 
 		if len(config.Token) > 0 && len(config.AWSMountPath) > 0 {
-			log.Fatal("Token and AWS mount path were simultaneously specified; these are mutually exclusive options")
+			log.Print("token and AWS mount path were simultaneously specified; these are mutually exclusive options")
+			return errors.New("unable to deduce authentication engine")
 		}
 		if len(config.Token) == 0 {
 			log.Print("AWS IAM authentication will be utilized with the Vault client")
@@ -55,15 +58,21 @@ func (config *VaultConfig) New() {
 		}
 	}
 	if config.Engine == token && len(config.Token) != 28 {
-		log.Fatal("the specified Vault Token is invalid")
+		log.Print("the specified Vault Token is invalid")
+		return errors.New("invalid vault token")
 	}
-	if config.Engine == awsIam && len(config.AWSMountPath) == 0 {
-		log.Print("using default AWS authentication mount path at 'aws'")
-		config.AWSMountPath = "aws"
+	// default aws mount path and role
+	if config.Engine == awsIam {
+		if len(config.AWSMountPath) == 0 {
+			log.Print("using default AWS authentication mount path at 'aws'")
+			config.AWSMountPath = "aws"
+		}
+		if len(config.AWSRole) == 0 {
+			log.Print("using Vault role in utilized AWS authentication engine with the same name as the current utilized AWS IAM Role")
+		}
 	}
-	if config.Engine == awsIam && len(config.AWSRole) == 0 {
-		log.Print("using Vault role in utilized AWS authentication engine with the same name as the current utilized AWS IAM Role")
-	}
+
+	return nil
 }
 
 // instantiate authenticated vault client with aws-iam or token auth
