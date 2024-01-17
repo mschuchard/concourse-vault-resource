@@ -31,7 +31,11 @@ func main() {
 	}
 
 	// initialize vault client from concourse source
-	vaultClient := helper.VaultClientFromSource(checkRequest.Source)
+	vaultClient, err := helper.VaultClientFromSource(checkRequest.Source)
+	if err != nil {
+		log.Print("vault client failed to initialize during check")
+		log.Fatal(err)
+	}
 
 	// initialize vault secret from concourse params and invoke constructor
 	secret := vault.NewVaultSecret(secretSource.Engine, secretSource.Mount, secretSource.Path)

@@ -12,7 +12,7 @@ import (
 )
 
 // instantiates vault client from concourse source
-func VaultClientFromSource(source concourse.Source) *vaultapi.Client {
+func VaultClientFromSource(source concourse.Source) (*vaultapi.Client, error) {
 	// initialize vault config and client
 	vaultConfig := &vault.VaultConfig{
 		Engine:       vault.AuthEngine(source.AuthEngine),
@@ -22,8 +22,11 @@ func VaultClientFromSource(source concourse.Source) *vaultapi.Client {
 		Token:        source.Token,
 		Insecure:     source.Insecure,
 	}
-	vaultConfig.New()
-	return vaultConfig.AuthClient()
+	if err := vaultConfig.New(); err != nil {
+		log.Print("error initializing Vault client config from Concourse source")
+		return nil, err
+	}
+	return vaultConfig.AuthClient(), nil
 }
 
 // writes inResponse.Metadata marshalled to json to file at /opt/resource/vault.json

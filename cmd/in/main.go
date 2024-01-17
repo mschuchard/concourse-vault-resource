@@ -16,10 +16,12 @@ func main() {
 	inRequest := concourse.NewInRequest(os.Stdin)
 	inResponse := concourse.NewResponse()
 	// initialize vault client from concourse source
-	vaultClient := helper.VaultClientFromSource(inRequest.Source)
+	vaultClient, err := helper.VaultClientFromSource(inRequest.Source)
+	if err != nil {
+		log.Print("vault client failed to initialize during in/get")
+		log.Fatal(err)
+	}
 
-	// declare err specifically to track any SecretValue failure and trigger only after all secret operations
-	var err error
 	// initialize secretValues to store aggregated retrieved secrets and secretSource for efficiency
 	var secretMetadata vault.Metadata
 	secretValues := concourse.SecretValues{}
@@ -61,7 +63,8 @@ func main() {
 
 	// fatally exit if any secret Read operation failed
 	if err != nil {
-		log.Fatal("one or more attempted secret Read operations failed")
+		log.Print("one or more attempted secret Read operations failed")
+		log.Fatal(err)
 	}
 
 	// write marshalled metadata to file at /opt/resource/vault.json
