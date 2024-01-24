@@ -6,6 +6,11 @@ import vault "github.com/hashicorp/vault/api"
 const (
 	VaultAddress = "http://127.0.0.1:8200"
 	VaultToken   = "abcdefghijklmnopqrstuvwxyz09"
+	KVPath       = "foo/bar"
+	KVKey        = "password"
+	KVValue      = "supersecret"
+	KV1Mount     = "kv"
+	KV2Mount     = "secret"
 )
 
 var (

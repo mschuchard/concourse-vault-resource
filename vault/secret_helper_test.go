@@ -13,7 +13,7 @@ func TestGenerateCredentials(test *testing.T) {}
 
 // test secret key value secret
 func TestRetrieveKVSecret(test *testing.T) {
-	kv1VaultSecret := NewVaultSecret("kv1", "", KVPath)
+	kv1VaultSecret := NewVaultSecret("kv1", "", util.KVPath)
 	kv1Value, version, secretMetadata, err := kv1VaultSecret.retrieveKVSecret(util.VaultClient, "")
 
 	if err != nil {
@@ -26,12 +26,12 @@ func TestRetrieveKVSecret(test *testing.T) {
 	if version != "0" {
 		test.Errorf("the kv1 secret retrieval returned non-zero version: %s", version)
 	}
-	if kv1Value[KVKey] != KVValue {
+	if kv1Value[util.KVKey] != util.KVValue {
 		test.Error("the retrieved kv1 secret value was incorrect")
 		test.Errorf("secret map value: %v", kv1Value)
 	}
 
-	kv2VaultSecret := NewVaultSecret("kv2", KV2Mount, KVPath)
+	kv2VaultSecret := NewVaultSecret("kv2", util.KV2Mount, util.KVPath)
 	kv2Value, version, secretMetadata, err := kv2VaultSecret.retrieveKVSecret(util.VaultClient, "")
 
 	if err != nil {
@@ -44,7 +44,7 @@ func TestRetrieveKVSecret(test *testing.T) {
 	if version == "0" {
 		test.Errorf("the kv2 secret retrieval returned an invalid version: %s", version)
 	}
-	if kv2Value[KVKey] != KVValue {
+	if kv2Value[util.KVKey] != util.KVValue {
 		test.Error("the retrieved kv2 secret value was incorrect")
 		test.Errorf("secret map value: %v", kv2Value)
 	}
@@ -52,10 +52,10 @@ func TestRetrieveKVSecret(test *testing.T) {
 
 // test populate kv1 secret
 func TestPopulateKV1Secret(test *testing.T) {
-	kv1VaultSecret := NewVaultSecret("kv1", "", KVPath)
+	kv1VaultSecret := NewVaultSecret("kv1", "", util.KVPath)
 	version, secretMetadata, err := kv1VaultSecret.populateKV1Secret(
 		util.VaultClient,
-		map[string]interface{}{KVKey: KVValue},
+		map[string]interface{}{util.KVKey: util.KVValue},
 	)
 	if err != nil {
 		test.Error("the kv1 secret was not successfully put")
@@ -71,10 +71,10 @@ func TestPopulateKV1Secret(test *testing.T) {
 
 // test populate kv2 secret
 func TestPopulateKV2Secret(test *testing.T) {
-	kv2VaultSecret := NewVaultSecret("kv2", "", KVPath)
+	kv2VaultSecret := NewVaultSecret("kv2", "", util.KVPath)
 	version, secretMetadata, err := kv2VaultSecret.populateKV2Secret(
 		util.VaultClient,
-		map[string]interface{}{KVKey: KVValue},
+		map[string]interface{}{util.KVKey: util.KVValue},
 		false,
 	)
 	if err != nil {

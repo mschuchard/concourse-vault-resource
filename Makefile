@@ -22,7 +22,7 @@ release: tidy
 bootstrap:
 	# using cli for this avoids importing the entire vault/command package
 	@nohup vault server -dev -dev-root-token-id="abcdefghijklmnopqrstuvwxyz09" &
-	@go test -v -run TestBootstrap ./vault
+	@go test -v -run TestBootstrap ./vault/util
 
 shutdown:
 	@killall vault
