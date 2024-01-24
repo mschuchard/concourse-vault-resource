@@ -16,7 +16,10 @@ func TestNewVaultConfig(test *testing.T) {
 		Token:    util.VaultToken,
 		Insecure: true,
 	}
-	basicVaultConfig.New()
+	if err := basicVaultConfig.New(); err != nil {
+		test.Error("the basic vault config did not successfully validate")
+		test.Error(err)
+	}
 
 	if basicVaultConfig.Engine != token || basicVaultConfig.Address != util.VaultAddress || len(basicVaultConfig.AWSMountPath) != 0 || len(basicVaultConfig.AWSRole) != 0 || basicVaultConfig.Token != util.VaultToken || !basicVaultConfig.Insecure {
 		test.Error("the Vault config constructor returned unexpected values.")
@@ -32,7 +35,10 @@ func TestNewVaultConfig(test *testing.T) {
 		Address: "https://192.168.9.10",
 		AWSRole: "myIAMRole",
 	}
-	awsVaultConfig.New()
+	if err := awsVaultConfig.New(); err != nil {
+		test.Error("the aws vault config did not successfully validate")
+		test.Error(err)
+	}
 
 	if awsVaultConfig.Engine != awsIam || awsVaultConfig.Address != "https://192.168.9.10" || awsVaultConfig.AWSMountPath != "aws" || awsVaultConfig.AWSRole != "myIAMRole" || len(awsVaultConfig.Token) != 0 || awsVaultConfig.Insecure {
 		test.Error("the Vault config constructor returned unexpected values.")
