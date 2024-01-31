@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"os"
 
@@ -22,19 +23,21 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// declare secret metadata at scope
-	var secretMetadata vault.Metadata
-
 	// perform secrets operations
 	for mount, secretParams := range outRequest.Params {
 		// iterate through secrets and assign each path to each vault secret path, and write each secret value to the path
 		for secretPath, secretValue := range secretParams.Secrets {
+			// declare because implicit type deduction not allowed
+			var secretMetadata vault.Metadata
+			var writeErr error
 			// initialize vault secret from concourse params
 			secret := vault.NewVaultSecret(secretParams.Engine, mount, secretPath)
 			// declare identifier and rawSecret
 			identifier := mount + "-" + secretPath
 			// write the secret value to the path for the specified mount and engine
-			outResponse.Version[identifier], secretMetadata, err = secret.PopulateKVSecret(vaultClient, secretValue, secretParams.Patch)
+			outResponse.Version[identifier], secretMetadata, writeErr = secret.PopulateKVSecret(vaultClient, secretValue, secretParams.Patch)
+			// join error into collection
+			err = errors.Join(err, writeErr)
 			// convert rawSecret to concourse metadata and append to metadata
 			outResponse.Metadata = append(outResponse.Metadata, helper.VaultToConcourseMetadata(identifier, secretMetadata)...)
 		}

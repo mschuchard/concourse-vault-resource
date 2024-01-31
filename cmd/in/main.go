@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"os"
 
@@ -33,30 +34,38 @@ func main() {
 		for mount, secretParams := range inRequest.Params {
 			// iterate through secret params' paths and assign each to each vault secret path
 			for _, secretPath := range secretParams.Paths {
+				// declare because implicit type deduction not allowed
+				var readErr error
 				// initialize vault secret from concourse params
 				secret := vault.NewVaultSecret(secretParams.Engine, mount, secretPath)
-				// declare identifier and rawSecret
+				// declare identifier
 				identifier := mount + "-" + secretPath
 
 				// renew or retrieve/generate
 				if secretParams.Renew {
 					// return updated metadata for dynamic secret after lease renewal
-					inResponse.Version[identifier], secretMetadata, err = secret.Renew(vaultClient, secretPath)
+					inResponse.Version[identifier], secretMetadata, readErr = secret.Renew(vaultClient, secretPath)
 				} else {
 					// return and assign the secret values for the given path
-					secretValues[identifier], inResponse.Version[identifier], secretMetadata, err = secret.SecretValue(vaultClient, "")
+					secretValues[identifier], inResponse.Version[identifier], secretMetadata, readErr = secret.SecretValue(vaultClient, "")
 				}
+				// join error into collection
+				err = errors.Join(err, readErr)
 				// convert rawSecret to concourse metadata and append to metadata
 				inResponse.Metadata = append(inResponse.Metadata, helper.VaultToConcourseMetadata(identifier, secretMetadata)...)
 			}
 		}
 	} else { // read secret from source
+		// declare because implicit type deduction not allowed
+		var readErr error
 		// initialize vault secret from concourse params
 		secret := vault.NewVaultSecret(secretSource.Engine, secretSource.Mount, secretSource.Path)
 		// declare identifier and rawSecret
 		identifier := secretSource.Mount + "-" + secretSource.Path
 		// return and assign the secret values for the given path
-		secretValues[identifier], inResponse.Version[identifier], secretMetadata, err = secret.SecretValue(vaultClient, inRequest.Version.Version)
+		secretValues[identifier], inResponse.Version[identifier], secretMetadata, readErr = secret.SecretValue(vaultClient, inRequest.Version.Version)
+		// join error into collection
+		err = errors.Join(err, readErr)
 		// convert rawSecret to concourse metadata and append to metadata
 		inResponse.Metadata = append(inResponse.Metadata, helper.VaultToConcourseMetadata(identifier, secretMetadata)...)
 	}
