@@ -41,6 +41,13 @@ func (config *VaultConfig) New() error {
 		}
 	}
 
+	// insecure default
+	if config.Address[0:5] == "https" { // https --> false
+		config.Insecure = false
+	} else { // http --> true
+		config.Insecure = true
+	}
+
 	// determine engine if unspecified and validate authentication parameters
 	if len(config.Engine) == 0 {
 		log.Print("authentication engine for Vault not specified; using logic from other parameters to assist with determination")

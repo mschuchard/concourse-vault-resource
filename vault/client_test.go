@@ -9,9 +9,8 @@ import (
 // test config constructor
 func TestNewVaultConfig(test *testing.T) {
 	basicVaultConfig := &VaultConfig{
-		Address:  util.VaultAddress,
-		Token:    util.VaultToken,
-		Insecure: true,
+		Address: util.VaultAddress,
+		Token:   util.VaultToken,
 	}
 	if err := basicVaultConfig.New(); err != nil {
 		test.Error("the basic vault config did not successfully validate")
