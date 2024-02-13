@@ -41,10 +41,10 @@ func (config *VaultConfig) New() error {
 		}
 	}
 
-	// insecure default
-	if config.Address[0:5] == "https" { // https --> false
-		config.Insecure = false
-	} else { // http --> true
+	// insecure validation
+	if !config.Insecure && config.Address[0:5] == "http:" {
+		log.Print("insecure input parameter was omitted or specified as false, and address protocol is http")
+		log.Print("insecure will be reset to value of true")
 		config.Insecure = true
 	}
 

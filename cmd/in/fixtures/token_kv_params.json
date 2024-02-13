@@ -2,6 +2,7 @@
   "source": {
     "address": "http://localhost:8200",
     "auth_engine": "token",
+    "insecure": true,
     "token": "abcdefghijklmnopqrstuvwxyz09"
   },
   "params": {
