@@ -1,6 +1,6 @@
 # Concourse Vault Resource
 
-A [concourse-ci](https://concourse-ci.org) resource for interacting with secrets via [Vault](https://www.vaultproject.io). This plugin was most recently tested against Vault version 1.13.12.
+A [concourse-ci](https://concourse-ci.org) resource for interacting with secrets via [Vault](https://www.vaultproject.io). This plugin was most recently tested against Vault version 1.14.10.
 
 This repository and project is based on the work performed for [MITODL](https://github.com/mitodl/concourse-vault-resource), and now serves as an upstream for the project hosted within that organization. Accordingly it maintains the BSD-3 license with copyright notice.
 
@@ -55,7 +55,7 @@ version:
 ### `check`: returns secret versions between input version and retrieved version sequentially and inclusive
 
 NOTE: currently only the KV2 secrets engine is supported.  
-NOTE FOR FUTURE: if the specified secret is dynamic, then the input version is ignored because the comparison is between the current time and the expiration time.
+NOTE: if the specified secret is dynamic, then the input version is ignored because the comparison is between the current time and the secret expiration time
 
 This step has no parameters, and utilizes the `source` and `version` values for functionality. It also executes automatically during resource instantiation.
 
@@ -201,3 +201,8 @@ jobs:
         engine: kv1
   - get: vault-secret-check
 ```
+
+## Contributing
+Code should pass all unit and acceptance tests. New features should involve new unit tests.
+
+Please consult the GitHub Project for the current development roadmap.

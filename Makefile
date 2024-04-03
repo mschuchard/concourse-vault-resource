@@ -15,9 +15,9 @@ build: tidy
 	@go build -o out cmd/out/main.go
 
 release: tidy
-	@go build -o check -ldflags="-s -w"  cmd/check/main.go
-	@go build -o in -ldflags="-s -w"  cmd/in/main.go
-	@go build -o out -ldflags="-s -w"  cmd/out/main.go
+	@go build -o check -ldflags="-s -w" cmd/check/main.go
+	@go build -o in -ldflags="-s -w" cmd/in/main.go
+	@go build -o out -ldflags="-s -w" cmd/out/main.go
 
 bootstrap:
 	# using cli for this avoids importing the entire vault/command package
