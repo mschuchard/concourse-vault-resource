@@ -90,30 +90,31 @@ func (config *VaultConfig) New() error {
 }
 
 // instantiate authenticated vault client with aws-iam or token auth
-func (config *VaultConfig) AuthClient() *vault.Client {
+func (config *VaultConfig) AuthClient() (*vault.Client, error) {
 	// initialize config
 	vaultConfig := &vault.Config{Address: config.Address}
 	err := vaultConfig.ConfigureTLS(&vault.TLSConfig{Insecure: config.Insecure})
 	if err != nil {
 		log.Print("Vault TLS configuration failed to initialize")
-		log.Fatal(err)
+		return nil, err
 	}
 
 	// initialize client
 	client, err := vault.NewClient(vaultConfig)
 	if err != nil {
 		log.Print("Vault client failed to initialize")
-		log.Fatal(err)
+		return nil, err
 	}
 
 	// verify vault is unsealed
 	sealStatus, err := client.Sys().SealStatus()
 	if err != nil {
 		log.Print("unable to verify that the Vault cluster is unsealed")
-		log.Fatal(err)
+		return nil, err
 	}
 	if sealStatus.Sealed {
-		log.Fatal("the Vault server cluster is sealed and no operations can be executed")
+		log.Print("the Vault server cluster is sealed and no operations can be executed")
+		return nil, errors.New("vault sealed")
 	}
 
 	// determine authentication method
@@ -135,19 +136,20 @@ func (config *VaultConfig) AuthClient() *vault.Client {
 		awsAuth, err := auth.NewAWSAuth(loginOption)
 		if err != nil {
 			log.Print("unable to initialize AWS IAM authentication")
-			log.Fatal(err)
+			return nil, err
 		}
 
 		authInfo, err := client.Auth().Login(context.Background(), awsAuth)
 		if err != nil {
 			log.Print("unable to login with AWS IAM auth method")
-			log.Fatal(err)
+			return nil, err
 		}
 		if authInfo == nil {
-			log.Fatal("no auth info was returned after login")
+			log.Print("no auth info was returned after login")
+			return nil, errors.New("no auth info")
 		}
 	}
 
 	// return authenticated vault client
-	return client
+	return client, nil
 }

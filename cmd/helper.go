@@ -26,7 +26,9 @@ func VaultClientFromSource(source concourse.Source) (*vaultapi.Client, error) {
 		log.Print("error initializing Vault client config from Concourse source")
 		return nil, err
 	}
-	return vaultConfig.AuthClient(), nil
+
+	// transparently return client or error up the stack
+	return vaultConfig.AuthClient()
 }
 
 // writes inResponse.Metadata marshalled to json to file at /opt/resource/vault.json
