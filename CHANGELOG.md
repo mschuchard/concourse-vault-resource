@@ -1,3 +1,5 @@
+### 1.0.2 (Next)
+
 ### 1.0.1
 - Improve Vault config validation and defaults.
 - Collect all errors during Vault interactions for logging.

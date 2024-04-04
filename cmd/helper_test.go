@@ -24,7 +24,9 @@ func TestVaultClientFromSource(test *testing.T) {
 
 func TestSecretsToJsonFile(test *testing.T) {
 	secretValues := concourse.SecretValues{"secretValue": {"key": "value"}}
-	SecretsToJsonFile(".", secretValues)
+	if err := SecretsToJsonFile(".", secretValues); err != nil {
+		test.Error(err)
+	}
 	defer os.Remove("./vault.json")
 }
 

@@ -30,19 +30,21 @@ func VaultClientFromSource(source concourse.Source) (*vaultapi.Client, error) {
 }
 
 // writes inResponse.Metadata marshalled to json to file at /opt/resource/vault.json
-func SecretsToJsonFile(filePath string, secretValues concourse.SecretValues) {
+func SecretsToJsonFile(filePath string, secretValues concourse.SecretValues) error {
 	// marshal secretValues into json data
 	secretsData, err := json.Marshal(secretValues)
 	if err != nil {
 		log.Print("unable to marshal SecretValues struct to json data")
-		log.Fatal(err)
+		return err
 	}
 	// write secrets to file at /opt/resource/vault.json
 	secretsFile := filePath + "/vault.json"
 	if err = os.WriteFile(secretsFile, secretsData, 0o600); err != nil {
 		log.Printf("error writing secrets to destination file at %s", secretsFile)
-		log.Fatal(err)
+		return err
 	}
+
+	return nil
 }
 
 // converts Vault secret metadata information to Concourse metadata
