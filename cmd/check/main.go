@@ -14,7 +14,11 @@ import (
 // GET for kv2 and credentials (expiration time) versions (kv1 not possible)
 func main() {
 	// initialize checkRequest and secretSource
-	checkRequest := concourse.NewCheckRequest(os.Stdin)
+	checkRequest, err := concourse.NewCheckRequest(os.Stdin)
+	if err != nil {
+		log.Print("unable to construct request for check step")
+		log.Fatal(err)
+	}
 	secretSource := checkRequest.Source.Secret
 
 	// return immediately if secret unspecified in source

@@ -14,7 +14,11 @@ import (
 // PUT/POST
 func main() {
 	// initialize request from concourse pipeline and response to satisfy concourse requirement
-	outRequest := concourse.NewOutRequest(os.Stdin)
+	outRequest, err := concourse.NewOutRequest(os.Stdin)
+	if err != nil {
+		log.Print("unable to construct request for out/put step")
+		log.Fatal(err)
+	}
 	outResponse := concourse.NewResponse()
 	// initialize vault client from concourse source
 	vaultClient, err := helper.VaultClientFromSource(outRequest.Source)

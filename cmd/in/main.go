@@ -14,7 +14,11 @@ import (
 // GET and primary
 func main() {
 	// initialize request from concourse pipeline and response storing secret values
-	inRequest := concourse.NewInRequest(os.Stdin)
+	inRequest, err := concourse.NewInRequest(os.Stdin)
+	if err != nil {
+		log.Print("unable to construct request for in/get step")
+		log.Fatal(err)
+	}
 	inResponse := concourse.NewResponse()
 	// initialize vault client from concourse source
 	vaultClient, err := helper.VaultClientFromSource(inRequest.Source)

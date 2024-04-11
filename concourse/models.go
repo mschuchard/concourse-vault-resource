@@ -2,6 +2,7 @@ package concourse
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"log"
 )
@@ -94,36 +95,37 @@ type response struct {
 }
 
 // inRequest constructor with pipeline param as io.Reader but typically os.Stdin *os.File input because concourse
-func NewCheckRequest(pipelineJSON io.Reader) *checkRequest {
+func NewCheckRequest(pipelineJSON io.Reader) (*checkRequest, error) {
 	// read, decode, and unmarshal the pipeline json io.Reader, and assign to the inRequest pointer
 	var checkRequest checkRequest
 	if err := json.NewDecoder(pipelineJSON).Decode(&checkRequest); err != nil {
 		log.Print("error decoding pipline input from JSON")
-		log.Fatal(err)
+		return nil, err
 	}
 
 	// initialize empty version if unspecified
 	if checkRequest.Source.Secret.Engine == "kv1" && checkRequest.Version != (Version{}) {
 		// validate version not specified for kv1
-		log.Fatal("version cannot be specified in conjunction with a kv version 1 engine secret")
+		log.Print("version cannot be specified in conjunction with a kv version 1 engine secret")
+		return nil, errors.New("secret version specified with kv1")
 	}
 
-	return &checkRequest
+	return &checkRequest, nil
 }
 
 // checkResponse constructor
 func NewCheckResponse(versions []Version) checkResponse {
-	// return reference to slice of version
+	// return slice of version
 	return versions
 }
 
 // inRequest constructor with pipeline param as io.Reader but typically os.Stdin *os.File input because concourse
-func NewInRequest(pipelineJSON io.Reader) *inRequest {
+func NewInRequest(pipelineJSON io.Reader) (*inRequest, error) {
 	// read, decode, and unmarshal the pipeline json io.Reader, and assign to the inRequest pointer
 	var inRequest inRequest
 	if err := json.NewDecoder(pipelineJSON).Decode(&inRequest); err != nil {
 		log.Print("error decoding pipline input from JSON")
-		log.Fatal(err)
+		return nil, err
 	}
 
 	// these conditionals are evaluated multiple times so assign here
@@ -137,13 +139,15 @@ func NewInRequest(pipelineJSON io.Reader) *inRequest {
 
 	// validate params versus source.secret
 	if !noSourceSecret && !noParamsSecret {
-		log.Fatal("secrets cannot be simultaneously specified in both source and params")
+		log.Print("secrets cannot be simultaneously specified in both source and params")
+		return nil, errors.New("dual secrets specified")
 	} else if noSourceSecret && noParamsSecret {
-		log.Fatal("one secret must be specified in source, or one or more secrets in params, and neither was specified")
+		log.Print("one secret must be specified in source, or one or more secrets in params, and neither was specified")
+		return nil, errors.New("no secrets specified")
 	}
 
 	// return reference
-	return &inRequest
+	return &inRequest, nil
 }
 
 // in/out response constructor
@@ -156,21 +160,22 @@ func NewResponse() *response {
 }
 
 // outRequest constructor with pipeline param as io.Reader but typically os.Stdin *os.File input because concourse
-func NewOutRequest(pipelineJSON io.Reader) *outRequest {
+func NewOutRequest(pipelineJSON io.Reader) (*outRequest, error) {
 	// read, decode, and unmarshal the pipeline json io.Reader, and assign to the outRequest pointer
 	var outRequest outRequest
 	if err := json.NewDecoder(pipelineJSON).Decode(&outRequest); err != nil {
 		log.Print("error decoding pipline input from JSON")
-		log.Fatal(err)
+		return nil, err
 	}
 	// validate
 	if outRequest.Source.Secret != (SecretSource{}) {
 		log.Print("specifying a secret in source for a put step has no effect, and that value will be ignored during this step execution")
 	}
 	if outRequest.Params == nil {
-		log.Fatal("no secret parameters were specified for this put step")
+		log.Print("no secret parameters were specified for this put step")
+		return nil, errors.New("empty params")
 	}
 
 	// return reference
-	return &outRequest
+	return &outRequest, nil
 }
