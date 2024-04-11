@@ -1,6 +1,7 @@
 package vault
 
 import (
+	"errors"
 	"log"
 	"time"
 
@@ -33,16 +34,18 @@ type vaultSecret struct {
 }
 
 // secret constructor
-func NewVaultSecret(engineString string, mount string, path string) *vaultSecret {
+func NewVaultSecret(engineString string, mount string, path string) (*vaultSecret, error) {
 	// validate mandatory fields specified
 	if len(engineString) == 0 || len(path) == 0 {
-		log.Fatal("the secret engine and path parameters are mandatory")
+		log.Print("the secret engine and path parameters are mandatory")
+		return nil, errors.New("required param(s) missing")
 	}
 
 	// validate engine parameter
 	engine := secretEngine(engineString)
 	if len(engine) == 0 {
-		log.Fatalf("an invalid secrets engine was specified: %s", engineString)
+		log.Printf("an invalid secrets engine was specified: %s", engineString)
+		return nil, errors.New("invalid secret engine")
 	}
 
 	// initialize vault secret
@@ -59,7 +62,8 @@ func NewVaultSecret(engineString string, mount string, path string) *vaultSecret
 	case keyvalue1, keyvalue2:
 		vaultSecret.dynamic = false
 	default:
-		log.Fatalf("an invalid secret engine %s was selected", engine)
+		log.Printf("an invalid secret engine %s was selected", engine)
+		return nil, errors.New("invalid secret engine")
 	}
 
 	// determine default mount path if not specified
@@ -75,11 +79,12 @@ func NewVaultSecret(engineString string, mount string, path string) *vaultSecret
 		case keyvalue2:
 			vaultSecret.mount = "secret"
 		default:
-			log.Fatalf("an invalid secret engine %s was selected", engine)
+			log.Printf("an invalid secret engine %s was selected", engine)
+			return nil, errors.New("invalid secret engine")
 		}
 	}
 
-	return vaultSecret
+	return vaultSecret, nil
 }
 
 // secret readers
@@ -107,8 +112,8 @@ func (secret *vaultSecret) SecretValue(client *vault.Client, version string) (ma
 	case keyvalue1, keyvalue2:
 		return secret.retrieveKVSecret(client, version)
 	default:
-		log.Fatalf("an invalid secret engine %s was selected", secret.engine)
-		return map[string]interface{}{}, "0", Metadata{}, nil // unreachable code, but compile error otherwise
+		log.Printf("an invalid secret engine %s was selected", secret.engine)
+		return map[string]interface{}{}, "0", Metadata{}, errors.New("invalid secret engine")
 	}
 }
 
@@ -120,8 +125,8 @@ func (secret *vaultSecret) PopulateKVSecret(client *vault.Client, secretValue ma
 	case keyvalue2:
 		return secret.populateKV2Secret(client, secretValue, patch)
 	default:
-		log.Fatalf("an invalid secret engine %s was selected", secret.engine)
-		return "0", Metadata{}, nil // unreachable code, but compile error otherwise
+		log.Printf("an invalid secret engine %s was selected", secret.engine)
+		return "0", Metadata{}, errors.New("invalid secret engine")
 	}
 }
 

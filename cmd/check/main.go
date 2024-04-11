@@ -41,8 +41,12 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// initialize vault secret from concourse params and invoke constructor
-	secret := vault.NewVaultSecret(secretSource.Engine, secretSource.Mount, secretSource.Path)
+	// initialize vault secret from concourse source params and invoke constructor
+	secret, err := vault.NewVaultSecret(secretSource.Engine, secretSource.Mount, secretSource.Path)
+	if err != nil {
+		log.Print("failed to construct secret from Concourse source parameters")
+		log.Fatal(err)
+	}
 
 	// retrieve version for secret
 	_, getVersion, _, err := secret.SecretValue(vaultClient, "")

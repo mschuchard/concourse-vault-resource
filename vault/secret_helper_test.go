@@ -13,7 +13,12 @@ func TestGenerateCredentials(test *testing.T) {}
 
 // test secret key value secret
 func TestRetrieveKVSecret(test *testing.T) {
-	kv1VaultSecret := NewVaultSecret("kv1", "", util.KVPath)
+	kv1VaultSecret, err := NewVaultSecret("kv1", "", util.KVPath)
+	if err != nil {
+		test.Error("kv secret failed to construct")
+		test.Error(err)
+	}
+
 	kv1Value, version, secretMetadata, err := kv1VaultSecret.retrieveKVSecret(util.VaultClient, "")
 
 	if err != nil {
@@ -31,7 +36,12 @@ func TestRetrieveKVSecret(test *testing.T) {
 		test.Errorf("secret map value: %v", kv1Value)
 	}
 
-	kv2VaultSecret := NewVaultSecret("kv2", util.KV2Mount, util.KVPath)
+	kv2VaultSecret, err := NewVaultSecret("kv2", util.KV2Mount, util.KVPath)
+	if err != nil {
+		test.Error("kv secret failed to construct")
+		test.Error(err)
+	}
+
 	kv2Value, version, secretMetadata, err := kv2VaultSecret.retrieveKVSecret(util.VaultClient, "")
 
 	if err != nil {
@@ -52,7 +62,12 @@ func TestRetrieveKVSecret(test *testing.T) {
 
 // test populate kv1 secret
 func TestPopulateKV1Secret(test *testing.T) {
-	kv1VaultSecret := NewVaultSecret("kv1", "", util.KVPath)
+	kv1VaultSecret, err := NewVaultSecret("kv1", "", util.KVPath)
+	if err != nil {
+		test.Error("kv secret failed to construct")
+		test.Error(err)
+	}
+
 	version, secretMetadata, err := kv1VaultSecret.populateKV1Secret(
 		util.VaultClient,
 		map[string]interface{}{util.KVKey: util.KVValue},
@@ -71,7 +86,12 @@ func TestPopulateKV1Secret(test *testing.T) {
 
 // test populate kv2 secret
 func TestPopulateKV2Secret(test *testing.T) {
-	kv2VaultSecret := NewVaultSecret("kv2", "", util.KVPath)
+	kv2VaultSecret, err := NewVaultSecret("kv2", "", util.KVPath)
+	if err != nil {
+		test.Error("kv secret failed to construct")
+		test.Error(err)
+	}
+
 	version, secretMetadata, err := kv2VaultSecret.populateKV2Secret(
 		util.VaultClient,
 		map[string]interface{}{util.KVKey: util.KVValue},

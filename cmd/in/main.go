@@ -41,7 +41,11 @@ func main() {
 				// declare because implicit type deduction not allowed
 				var readErr error
 				// initialize vault secret from concourse params
-				secret := vault.NewVaultSecret(secretParams.Engine, mount, secretPath)
+				secret, err := vault.NewVaultSecret(secretParams.Engine, mount, secretPath)
+				if err != nil {
+					log.Print("failed to construct secret from Concourse parameters")
+					log.Fatal(err)
+				}
 				// declare identifier
 				identifier := mount + "-" + secretPath
 
@@ -62,8 +66,12 @@ func main() {
 	} else { // read secret from source
 		// declare because implicit type deduction not allowed
 		var readErr error
-		// initialize vault secret from concourse params
-		secret := vault.NewVaultSecret(secretSource.Engine, secretSource.Mount, secretSource.Path)
+		// initialize vault secret from concourse source params
+		secret, err := vault.NewVaultSecret(secretSource.Engine, secretSource.Mount, secretSource.Path)
+		if err != nil {
+			log.Print("failed to construct secret from Concourse source parameters")
+			log.Fatal(err)
+		}
 		// declare identifier and rawSecret
 		identifier := secretSource.Mount + "-" + secretSource.Path
 		// return and assign the secret values for the given path

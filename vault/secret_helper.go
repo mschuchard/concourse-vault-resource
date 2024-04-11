@@ -2,6 +2,7 @@ package vault
 
 import (
 	"context"
+	"errors"
 	"log"
 	"strconv"
 	"time"
@@ -75,7 +76,8 @@ func (secret *vaultSecret) retrieveKVSecret(client *vault.Client, version string
 			}
 		}
 	default:
-		log.Fatalf("an invalid secret engine %s was selected", secret.engine)
+		log.Printf("an invalid secret engine %s was selected", secret.engine)
+		return map[string]interface{}{}, "0", Metadata{}, errors.New("invalid secret engine")
 	}
 
 	// verify secret read

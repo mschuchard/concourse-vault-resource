@@ -35,7 +35,11 @@ func main() {
 			var secretMetadata vault.Metadata
 			var writeErr error
 			// initialize vault secret from concourse params
-			secret := vault.NewVaultSecret(secretParams.Engine, mount, secretPath)
+			secret, err := vault.NewVaultSecret(secretParams.Engine, mount, secretPath)
+			if err != nil {
+				log.Print("failed to construct secret from Concourse parameters")
+				log.Fatal(err)
+			}
 			// declare identifier and rawSecret
 			identifier := mount + "-" + secretPath
 			// write the secret value to the path for the specified mount and engine
