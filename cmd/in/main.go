@@ -38,13 +38,11 @@ func main() {
 		for mount, secretParams := range inRequest.Params {
 			// iterate through secret params' paths and assign each to each vault secret path
 			for _, secretPath := range secretParams.Paths {
-				// declare because implicit type deduction not allowed
-				var readErr error
 				// initialize vault secret from concourse params
-				secret, err := vault.NewVaultSecret(secretParams.Engine, mount, secretPath)
-				if err != nil {
+				secret, nestedErr := vault.NewVaultSecret(secretParams.Engine, mount, secretPath)
+				if nestedErr != nil {
 					log.Print("failed to construct secret from Concourse parameters")
-					log.Fatal(err)
+					log.Fatal(nestedErr)
 				}
 				// declare identifier
 				identifier := mount + "-" + secretPath
@@ -52,32 +50,30 @@ func main() {
 				// renew or retrieve/generate
 				if secretParams.Renew {
 					// return updated metadata for dynamic secret after lease renewal
-					inResponse.Version[identifier], secretMetadata, readErr = secret.Renew(vaultClient, secretPath)
+					inResponse.Version[identifier], secretMetadata, nestedErr = secret.Renew(vaultClient, secretPath)
 				} else {
 					// return and assign the secret values for the given path
-					secretValues[identifier], inResponse.Version[identifier], secretMetadata, readErr = secret.SecretValue(vaultClient, "")
+					secretValues[identifier], inResponse.Version[identifier], secretMetadata, nestedErr = secret.SecretValue(vaultClient, "")
 				}
 				// join error into collection
-				err = errors.Join(err, readErr)
+				err = errors.Join(err, nestedErr)
 				// convert rawSecret to concourse metadata and append to metadata
 				inResponse.Metadata = append(inResponse.Metadata, helper.VaultToConcourseMetadata(identifier, secretMetadata)...)
 			}
 		}
 	} else { // read secret from source
-		// declare because implicit type deduction not allowed
-		var readErr error
 		// initialize vault secret from concourse source params
-		secret, err := vault.NewVaultSecret(secretSource.Engine, secretSource.Mount, secretSource.Path)
-		if err != nil {
+		secret, nestedErr := vault.NewVaultSecret(secretSource.Engine, secretSource.Mount, secretSource.Path)
+		if nestedErr != nil {
 			log.Print("failed to construct secret from Concourse source parameters")
-			log.Fatal(err)
+			log.Fatal(nestedErr)
 		}
 		// declare identifier and rawSecret
 		identifier := secretSource.Mount + "-" + secretSource.Path
 		// return and assign the secret values for the given path
-		secretValues[identifier], inResponse.Version[identifier], secretMetadata, readErr = secret.SecretValue(vaultClient, inRequest.Version.Version)
+		secretValues[identifier], inResponse.Version[identifier], secretMetadata, nestedErr = secret.SecretValue(vaultClient, inRequest.Version.Version)
 		// join error into collection
-		err = errors.Join(err, readErr)
+		err = errors.Join(err, nestedErr)
 		// convert rawSecret to concourse metadata and append to metadata
 		inResponse.Metadata = append(inResponse.Metadata, helper.VaultToConcourseMetadata(identifier, secretMetadata)...)
 	}
