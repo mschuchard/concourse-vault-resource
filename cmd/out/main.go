@@ -33,19 +33,18 @@ func main() {
 		for secretPath, secretValue := range secretParams.Secrets {
 			// declare because implicit type deduction not allowed
 			var secretMetadata vault.Metadata
-			var writeErr error
 			// initialize vault secret from concourse params
-			secret, err := vault.NewVaultSecret(secretParams.Engine, mount, secretPath)
-			if err != nil {
+			secret, nestedErr := vault.NewVaultSecret(secretParams.Engine, mount, secretPath)
+			if nestedErr != nil {
 				log.Print("failed to construct secret from Concourse parameters")
-				log.Fatal(err)
+				log.Fatal(nestedErr)
 			}
 			// declare identifier and rawSecret
 			identifier := mount + "-" + secretPath
 			// write the secret value to the path for the specified mount and engine
-			outResponse.Version[identifier], secretMetadata, writeErr = secret.PopulateKVSecret(vaultClient, secretValue, secretParams.Patch)
+			outResponse.Version[identifier], secretMetadata, nestedErr = secret.PopulateKVSecret(vaultClient, secretValue, secretParams.Patch)
 			// join error into collection
-			err = errors.Join(err, writeErr)
+			err = errors.Join(err, nestedErr)
 			// convert rawSecret to concourse metadata and append to metadata
 			outResponse.Metadata = append(outResponse.Metadata, helper.VaultToConcourseMetadata(identifier, secretMetadata)...)
 		}

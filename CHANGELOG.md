@@ -1,5 +1,6 @@
 ### 1.0.2 (Next)
 - Gracefully handle errors instead of simple logging and panic.
+- Fix error collection for Vault read/write interactions during in/out steps.
 
 ### 1.0.1
 - Improve Vault config validation and defaults.
