@@ -35,8 +35,14 @@ func (config *VaultConfig) New() error {
 		config.Address = "http://127.0.0.1:8200"
 	} else {
 		// vault address validation
-		if _, err := url.ParseRequestURI(config.Address); err != nil {
+		if url, err := url.ParseRequestURI(config.Address); err != nil || len(url.Scheme) == 0 || len(url.Host) == 0 {
 			log.Printf("%s is not a valid Vault server address", config.Address)
+
+			// assign err if it is nil
+			if err == nil {
+				err = errors.New("invalid Vault server address")
+			}
+
 			return err
 		}
 	}
@@ -54,6 +60,7 @@ func (config *VaultConfig) New() error {
 
 		if len(config.Token) > 0 && len(config.AWSMountPath) > 0 {
 			log.Print("token and AWS mount path were simultaneously specified; these are mutually exclusive options")
+			log.Print("intended authentication engine could not be determined from other parameters")
 			return errors.New("unable to deduce authentication engine")
 		}
 		if len(config.Token) == 0 {
