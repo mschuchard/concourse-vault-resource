@@ -24,6 +24,7 @@ func TestCheckRequest(test *testing.T) {
 		test.Error(err)
 	}
 	source := checkRequest.Source
+
 	if checkRequest.Version != version || source.AuthEngine != "token" || source.Address != "http://localhost:8200" || !source.Insecure || source.Token != "abcdefghijklmnopqrstuvwxyz09" || source.Secret != (SecretSource{Engine: "kv2", Mount: "secret", Path: "foo/bar"}) {
 		test.Error("check request constructor returned unexpected values")
 		test.Errorf("expected Version field to be %v, actual: %v", version, checkRequest.Version)
@@ -47,7 +48,41 @@ func TestCheckResponse(test *testing.T) {
 
 // test inRequest constructor
 func TestNewInRequest(test *testing.T) {
-	//inRequest := NewInRequest()
+	pipelineJSON, err := os.OpenFile("../cmd/in/fixtures/token_kv_params.json", os.O_RDONLY, 0o444)
+	if err != nil {
+		test.Error(err)
+	}
+
+	inRequest, err := NewInRequest(pipelineJSON)
+	if err != nil {
+		test.Error("check request failed to construct")
+		test.Error(err)
+	}
+
+	source := inRequest.Source
+	expectedSource := Source{
+		AuthEngine: "token",
+		Address:    "http://localhost:8200",
+		Insecure:   true,
+		Token:      "abcdefghijklmnopqrstuvwxyz09",
+	}
+	params := inRequest.Params
+	expectedParams := map[string]secrets{
+		"secret": secrets{
+			Engine: "kv2",
+			Paths:  []string{"foo/bar", "bar/baz"},
+		},
+		"kv": secrets{
+			Engine: "kv1",
+			Paths:  []string{"foo/bar"},
+		},
+	}
+
+	if source != expectedSource || !maps.Equal(params, expectedParams) {
+		test.Error("in request constructor returned unexpected values")
+		test.Errorf("expected Source field to be %v, actual: %v", expectedSource, source)
+		test.Errorf("expected Params field to be %v, actual: %v")
+	}
 }
 
 // test inResponse constructor
