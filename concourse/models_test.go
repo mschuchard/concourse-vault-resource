@@ -55,7 +55,7 @@ func TestNewInRequest(test *testing.T) {
 
 	inRequest, err := NewInRequest(pipelineJSON)
 	if err != nil {
-		test.Error("check request failed to construct")
+		test.Error("in request failed to construct")
 		test.Error(err)
 	}
 
@@ -98,6 +98,51 @@ func TestNewInResponse(test *testing.T) {
 }
 
 // test outRequest constructor
+func TestNewOutRequest(test *testing.T) {
+	pipelineJSON, err := os.OpenFile("../cmd/out/fixtures/token_kv.json", os.O_RDONLY, 0o444)
+	if err != nil {
+		test.Error(err)
+	}
+
+	outRequest, err := NewOutRequest(pipelineJSON)
+	if err != nil {
+		test.Error("out request failed to construct")
+		test.Error(err)
+	}
+
+	source := outRequest.Source
+	expectedSource := Source{
+		AuthEngine: "token",
+		Address:    "http://localhost:8200",
+		Insecure:   true,
+		Token:      "abcdefghijklmnopqrstuvwxyz09",
+	}
+	params := outRequest.Params
+	expectedParams := map[string]secretsPut{
+		"secret": secretsPut{
+			Engine: "kv2",
+			Secrets:  map[string]secretValue{
+				"thefoo": map[string]interface{} {
+					"newpassword": "foo/bar",
+					"newerpassword": "bar/baz",
+				},
+			},
+		},
+		"kv": secretsPut{
+			Engine: "kv1",
+			Secrets:  map[string]secretValue{
+				"thebar": map[string]interface{} {"key": "value"},
+			  "thebaz": map[string]interface{} {"key": "value"},
+			},
+		},
+	}
+
+	if source != expectedSource || !maps.Equal(params, expectedParams) {
+		test.Error("out request constructor returned unexpected values")
+		test.Errorf("expected Source field to be %v, actual: %v", expectedSource, source)
+		test.Errorf("expected Params field to be %v, actual: %v")
+	}
+}
 
 // test outResponse constructor
 func TestOutResponse(test *testing.T) {
