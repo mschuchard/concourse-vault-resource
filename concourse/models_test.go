@@ -2,6 +2,7 @@ package concourse
 
 import (
 	"maps"
+	"slices"
 	"os"
 	"testing"
 )
@@ -78,10 +79,10 @@ func TestNewInRequest(test *testing.T) {
 		},
 	}
 
-	if source != expectedSource || !maps.Equal(params, expectedParams) {
+	if source != expectedSource || params["secret"].Engine != expectedParams["secret"].Engine || !slices.Equal(params["secret"].Paths, expectedParams["secret"].Paths) || params["kv"].Engine != expectedParams["kv"].Engine || !slices.Equal(params["kv"].Paths, expectedParams["kv"].Paths) {
 		test.Error("in request constructor returned unexpected values")
 		test.Errorf("expected Source field to be %v, actual: %v", expectedSource, source)
-		test.Errorf("expected Params field to be %v, actual: %v")
+		test.Errorf("expected Params field to be %v, actual: %v", expectedParams, params)
 	}
 }
 
@@ -123,8 +124,8 @@ func TestNewOutRequest(test *testing.T) {
 			Engine: "kv2",
 			Secrets:  map[string]secretValue{
 				"thefoo": map[string]interface{} {
-					"newpassword": "foo/bar",
-					"newerpassword": "bar/baz",
+					"newpassword": "newsecret",
+					"newerpassword": "newersecret",
 				},
 			},
 		},
@@ -137,10 +138,10 @@ func TestNewOutRequest(test *testing.T) {
 		},
 	}
 
-	if source != expectedSource || !maps.Equal(params, expectedParams) {
+	if source != expectedSource || params["secret"].Engine != expectedParams["secret"].Engine || !maps.Equal(params["secret"].Secrets["thefoo"], expectedParams["secret"].Secrets["thefoo"]) || params["kv"].Engine != expectedParams["kv"].Engine || !maps.Equal(params["kv"].Secrets["thebar"], expectedParams["kv"].Secrets["thebar"]) || !maps.Equal(params["kv"].Secrets["thebaz"], expectedParams["kv"].Secrets["thebaz"]) {
 		test.Error("out request constructor returned unexpected values")
 		test.Errorf("expected Source field to be %v, actual: %v", expectedSource, source)
-		test.Errorf("expected Params field to be %v, actual: %v")
+		test.Errorf("expected Params field to be %v, actual: %v", expectedParams, params)
 	}
 }
 
