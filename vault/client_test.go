@@ -16,15 +16,15 @@ func TestNewVaultConfig(test *testing.T) {
 		test.Error("the basic vault config did not successfully validate")
 		test.Error(err)
 	}
+	expectedVaultConfig := VaultConfig{
+		Address: util.VaultAddress,
+		Token:   util.VaultToken,
+	}
 
-	if basicVaultConfig.Engine != token || basicVaultConfig.Address != util.VaultAddress || len(basicVaultConfig.AWSMountPath) != 0 || len(basicVaultConfig.AWSRole) != 0 || basicVaultConfig.Token != util.VaultToken || !basicVaultConfig.Insecure {
-		test.Error("the Vault config constructor returned unexpected values.")
-		test.Errorf("expected Auth Engine: %s, actual: %s", token, basicVaultConfig.Engine)
-		test.Errorf("expected Vault Address: %s, actual: %s", util.VaultAddress, basicVaultConfig.Address)
-		test.Errorf("expected AWS Mount Path: (empty), actual: %s", basicVaultConfig.AWSMountPath)
-		test.Errorf("expected AWS IAM Role: (empty), actual: %s", basicVaultConfig.AWSRole)
-		test.Errorf("expected Vault Token: %s, actual: %s", util.VaultToken, basicVaultConfig.Token)
-		test.Errorf("expected Vault Insecure: true, actual: %t", basicVaultConfig.Insecure)
+	if *basicVaultConfig != expectedVaultConfig {
+		test.Error("the vault basic config constructor returned unexpected values.")
+		test.Errorf("expected vault config: %v", expectedVaultConfig)
+		test.Errorf("actual vault config: %v", *basicVaultConfig)
 	}
 
 	awsVaultConfig := &VaultConfig{
@@ -35,15 +35,15 @@ func TestNewVaultConfig(test *testing.T) {
 		test.Error("the aws vault config did not successfully validate")
 		test.Error(err)
 	}
+	expectedVaultConfig = VaultConfig{
+		Address: "https://192.168.9.10",
+		AWSRole: "myIAMRole",
+	}
 
-	if awsVaultConfig.Engine != awsIam || awsVaultConfig.Address != "https://192.168.9.10" || awsVaultConfig.AWSMountPath != "aws" || awsVaultConfig.AWSRole != "myIAMRole" || len(awsVaultConfig.Token) != 0 || awsVaultConfig.Insecure {
-		test.Error("the Vault config constructor returned unexpected values.")
-		test.Errorf("expected Auth Engine: %s, actual: %s", awsIam, awsVaultConfig.Engine)
-		test.Errorf("expected Vault Address: https://192.168.9.10, actual: %s", awsVaultConfig.Address)
-		test.Errorf("expected AWS Mount Path: aws, actual: %s", awsVaultConfig.AWSMountPath)
-		test.Errorf("expected AWS IAM Role: myIAMRole, actual: %s", awsVaultConfig.AWSRole)
-		test.Errorf("expected Vault Token: (empty), actual: %s", awsVaultConfig.Token)
-		test.Errorf("expected Vault Insecure: false, actual: %t", awsVaultConfig.Insecure)
+	if *awsVaultConfig != expectedVaultConfig {
+		test.Error("the vault aws config constructor returned unexpected values.")
+		test.Errorf("expected vault config: %v", expectedVaultConfig)
+		test.Errorf("actual vault config: %v", *awsVaultConfig)
 	}
 }
 
