@@ -133,11 +133,11 @@ func TestRawSecretToMetadata(test *testing.T) {
 	}
 
 	metadata := rawSecretToMetadata(rawSecret)
+	expectedMetadata := Metadata{LeaseID: rawSecret.LeaseID, LeaseDuration: "65535", Renewable: "false"}
 
-	if metadata.LeaseID != rawSecret.LeaseID || metadata.LeaseDuration != "65535" || metadata.Renewable != "false" {
+	if metadata != expectedMetadata {
 		test.Error("the converted metadata returned unexpected values")
-		test.Errorf("expected leaseid: %s, actual: %s", rawSecret.LeaseID, metadata.LeaseID)
-		test.Errorf("expected leaseduration value and type: 65535 string, actual: %s %T", metadata.LeaseDuration, metadata.LeaseDuration)
-		test.Errorf("expected renewable value and type: false string, actual: %s %T", metadata.Renewable, metadata.Renewable)
+		test.Errorf("expected values: %v", expectedMetadata)
+		test.Errorf("actual values: %v", metadata)
 	}
 }

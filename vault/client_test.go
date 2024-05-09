@@ -17,8 +17,10 @@ func TestNewVaultConfig(test *testing.T) {
 		test.Error(err)
 	}
 	expectedVaultConfig := VaultConfig{
-		Address: util.VaultAddress,
-		Token:   util.VaultToken,
+		Address:  util.VaultAddress,
+		Engine:   token,
+		Token:    util.VaultToken,
+		Insecure: true,
 	}
 
 	if *basicVaultConfig != expectedVaultConfig {
@@ -36,8 +38,10 @@ func TestNewVaultConfig(test *testing.T) {
 		test.Error(err)
 	}
 	expectedVaultConfig = VaultConfig{
-		Address: "https://192.168.9.10",
-		AWSRole: "myIAMRole",
+		Address:      "https://192.168.9.10",
+		Engine:       awsIam,
+		AWSMountPath: "aws",
+		AWSRole:      "myIAMRole",
 	}
 
 	if *awsVaultConfig != expectedVaultConfig {
