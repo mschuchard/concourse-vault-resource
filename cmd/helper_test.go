@@ -2,6 +2,7 @@ package helper
 
 import (
 	"os"
+	"slices"
 	"testing"
 
 	"github.com/mitodl/concourse-vault-resource/concourse"
@@ -14,11 +15,13 @@ func TestVaultClientFromSource(test *testing.T) {
 	source := concourse.Source{Token: util.VaultToken}
 	client, err := VaultClientFromSource(source)
 	if err != nil {
+		test.Error("failed to initialize vault client from concourse source")
 		test.Error(err)
-	}
-	if client.Token() != util.VaultToken {
-		test.Error("vault client configured with parameters from concourse source was not authenticated with expected token from source parameters")
-		test.Errorf("actual token: %s, expected token: %s", client.Token(), util.VaultToken)
+	} else {
+		if client.Token() != util.VaultToken {
+			test.Error("vault client configured with parameters from concourse source was not authenticated with expected token from source parameters")
+			test.Errorf("actual token: %s, expected token: %s", client.Token(), util.VaultToken)
+		}
 	}
 }
 
@@ -36,24 +39,27 @@ func TestVaultToConcourseMetadata(test *testing.T) {
 		LeaseDuration: "65535",
 		Renewable:     "false",
 	}
+	secretPath := "secret-foo/bar"
 
-	metadata := VaultToConcourseMetadata("secret-foo/bar", secretMetadata)
-	if len(metadata) != 3 {
-		test.Error("metadata did not contain the expected number (three) entries per raw secret")
+	concourseMetadata := VaultToConcourseMetadata(secretPath, secretMetadata)
+	expectedConcourseMetadata := []concourse.MetadataEntry{
+		concourse.MetadataEntry{
+			Name:  secretPath + "-LeaseID",
+			Value: secretMetadata.LeaseID,
+		},
+		concourse.MetadataEntry{
+			Name:  secretPath + "-LeaseDuration",
+			Value: secretMetadata.LeaseDuration,
+		},
+		concourse.MetadataEntry{
+			Name:  secretPath + "-Renewable",
+			Value: secretMetadata.Renewable,
+		},
 	}
-	if metadata[0].Name != "secret-foo/bar-LeaseID" || metadata[0].Value != secretMetadata.LeaseID {
-		test.Error("first metadata entry is inaccurate")
-		test.Errorf("expected name: secret-foo/bar-LeaseID, actual: %s", metadata[0].Name)
-		test.Errorf("expected value: %s, actual: %s", secretMetadata.LeaseID, metadata[0].Value)
-	}
-	if metadata[1].Name != "secret-foo/bar-LeaseDuration" || metadata[1].Value != secretMetadata.LeaseDuration {
-		test.Error("first metadata entry is inaccurate")
-		test.Errorf("expected name: secret-foo/bar-LeaseDuration, actual: %s", metadata[1].Name)
-		test.Errorf("expected value: %s, actual: %s", secretMetadata.LeaseDuration, metadata[1].Value)
-	}
-	if metadata[2].Name != "secret-foo/bar-Renewable" || metadata[2].Value != secretMetadata.Renewable {
-		test.Error("first metadata entry is inaccurate")
-		test.Errorf("expected name: secret-foo/bar-Renewable, actual: %s", metadata[2].Name)
-		test.Errorf("expected value: %s, actual: %s", secretMetadata.Renewable, metadata[2].Value)
+
+	if !slices.Equal(expectedConcourseMetadata, concourseMetadata) {
+		test.Error("vault to concourse metadata conversion returned unexpected value")
+		test.Errorf("expected value: %v", expectedConcourseMetadata)
+		test.Errorf("actual value: %v", concourseMetadata)
 	}
 }
