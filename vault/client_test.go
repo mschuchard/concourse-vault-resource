@@ -53,8 +53,20 @@ func TestNewVaultConfig(test *testing.T) {
 
 // test client token authentication
 func TestAuthClient(test *testing.T) {
-	if util.VaultClient.Token() != util.VaultToken {
+	basicVaultConfig := &VaultConfig{
+		Address:  util.VaultAddress,
+		Engine:   token,
+		Token:    util.VaultToken,
+		Insecure: true,
+	}
+	basicClient, err := basicVaultConfig.AuthClient()
+	if err != nil {
+		test.Error("authenticating a vault client with a basic token config errored")
+		test.Error(err)
+	}
+	if basicClient.Address() != basicVaultConfig.Address || basicClient.Token() != basicVaultConfig.Token {
 		test.Error("the authenticated Vault client return failed basic validation")
-		test.Errorf("expected Vault token: %s, actual: %s", util.VaultToken, util.VaultClient.Token())
+		test.Errorf("expected Vault token: %s, actual: %s", basicVaultConfig.Token, basicClient.Token())
+		test.Errorf("expected Vault address: %s, actual: %s", basicVaultConfig.Address, basicClient.Address())
 	}
 }
