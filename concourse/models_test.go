@@ -1,9 +1,10 @@
 package concourse
 
 import (
+	"encoding/json"
 	"maps"
-	"slices"
 	"os"
+	"slices"
 	"testing"
 )
 
@@ -50,35 +51,21 @@ func TestCheckResponse(test *testing.T) {
 
 // test inRequest constructor
 func TestNewInRequest(test *testing.T) {
-	pipelineJSON, err := os.OpenFile("../cmd/in/fixtures/token_kv_params.json", os.O_RDONLY, 0o444)
-	if err != nil {
-		test.Error(err)
-	}
-
-	inRequest, err := NewInRequest(pipelineJSON)
+	pipelineJSON, _ := os.OpenFile("../cmd/in/fixtures/token_kv_params.json", os.O_RDONLY, 0o444)
+	newInRequest, err := NewInRequest(pipelineJSON)
 	if err != nil {
 		test.Error("in request failed to construct")
 		test.Error(err)
 	}
 
-	source := inRequest.Source
-	expectedSource := Source{
-		AuthEngine: "token",
-		Address:    "http://localhost:8200",
-		Insecure:   true,
-		Token:      "abcdefghijklmnopqrstuvwxyz09",
-	}
-	params := inRequest.Params
-	expectedParams := map[string]secrets{
-		"secret": secrets{
-			Engine: "kv2",
-			Paths:  []string{"foo/bar", "bar/baz"},
-		},
-		"kv": secrets{
-			Engine: "kv1",
-			Paths:  []string{"foo/bar"},
-		},
-	}
+	pipelineJSON, _ = os.OpenFile("../cmd/in/fixtures/token_kv_params.json", os.O_RDONLY, 0o444)
+	var expectedIn inRequest
+	json.NewDecoder(pipelineJSON).Decode(&expectedIn)
+
+	source := newInRequest.Source
+	expectedSource := expectedIn.Source
+	params := newInRequest.Params
+	expectedParams := expectedIn.Params
 
 	if source != expectedSource || params["secret"].Engine != expectedParams["secret"].Engine || !slices.Equal(params["secret"].Paths, expectedParams["secret"].Paths) || params["kv"].Engine != expectedParams["kv"].Engine || !slices.Equal(params["kv"].Paths, expectedParams["kv"].Paths) {
 		test.Error("in request constructor returned unexpected values")
@@ -101,43 +88,21 @@ func TestNewInResponse(test *testing.T) {
 
 // test outRequest constructor
 func TestNewOutRequest(test *testing.T) {
-	pipelineJSON, err := os.OpenFile("../cmd/out/fixtures/token_kv.json", os.O_RDONLY, 0o444)
-	if err != nil {
-		test.Error(err)
-	}
-
-	outRequest, err := NewOutRequest(pipelineJSON)
+	pipelineJSON, _ := os.OpenFile("../cmd/out/fixtures/token_kv.json", os.O_RDONLY, 0o444)
+	newOutRequest, err := NewOutRequest(pipelineJSON)
 	if err != nil {
 		test.Error("out request failed to construct")
 		test.Error(err)
 	}
 
-	source := outRequest.Source
-	expectedSource := Source{
-		AuthEngine: "token",
-		Address:    "http://localhost:8200",
-		Insecure:   true,
-		Token:      "abcdefghijklmnopqrstuvwxyz09",
-	}
-	params := outRequest.Params
-	expectedParams := map[string]secretsPut{
-		"secret": secretsPut{
-			Engine: "kv2",
-			Secrets:  map[string]secretValue{
-				"thefoo": map[string]interface{} {
-					"newpassword": "newsecret",
-					"newerpassword": "newersecret",
-				},
-			},
-		},
-		"kv": secretsPut{
-			Engine: "kv1",
-			Secrets:  map[string]secretValue{
-				"thebar": map[string]interface{} {"key": "value"},
-			  "thebaz": map[string]interface{} {"key": "value"},
-			},
-		},
-	}
+	pipelineJSON, _ = os.OpenFile("../cmd/out/fixtures/token_kv.json", os.O_RDONLY, 0o444)
+	var expectedOut outRequest
+	json.NewDecoder(pipelineJSON).Decode(&expectedOut)
+
+	source := newOutRequest.Source
+	expectedSource := expectedOut.Source
+	params := newOutRequest.Params
+	expectedParams := expectedOut.Params
 
 	if source != expectedSource || params["secret"].Engine != expectedParams["secret"].Engine || !maps.Equal(params["secret"].Secrets["thefoo"], expectedParams["secret"].Secrets["thefoo"]) || params["kv"].Engine != expectedParams["kv"].Engine || !maps.Equal(params["kv"].Secrets["thebar"], expectedParams["kv"].Secrets["thebar"]) || !maps.Equal(params["kv"].Secrets["thebaz"], expectedParams["kv"].Secrets["thebaz"]) {
 		test.Error("out request constructor returned unexpected values")
