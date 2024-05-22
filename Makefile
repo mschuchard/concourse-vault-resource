@@ -32,4 +32,4 @@ unit:
 
 resource:
 	@docker build -t mschuchard/concourse-vault-resource -t mschuchard/concourse-vault-resource:${TAG} .
-  @docker push -a mschuchard/concourse-vault-resource
+	@docker push -a mschuchard/concourse-vault-resource
