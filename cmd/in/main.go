@@ -6,9 +6,9 @@ import (
 	"log"
 	"os"
 
-	"github.com/mitodl/concourse-vault-resource/cmd"
-	"github.com/mitodl/concourse-vault-resource/concourse"
-	"github.com/mitodl/concourse-vault-resource/vault"
+	"github.com/mschuchard/concourse-vault-resource/cmd"
+	"github.com/mschuchard/concourse-vault-resource/concourse"
+	"github.com/mschuchard/concourse-vault-resource/vault"
 )
 
 // GET and primary

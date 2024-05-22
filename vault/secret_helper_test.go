@@ -5,7 +5,7 @@ import (
 
 	vault "github.com/hashicorp/vault/api"
 
-	"github.com/mitodl/concourse-vault-resource/vault/util"
+	"github.com/mschuchard/concourse-vault-resource/vault/util"
 )
 
 // test secret generate credential

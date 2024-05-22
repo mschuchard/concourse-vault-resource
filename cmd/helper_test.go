@@ -5,9 +5,9 @@ import (
 	"slices"
 	"testing"
 
-	"github.com/mitodl/concourse-vault-resource/concourse"
-	"github.com/mitodl/concourse-vault-resource/vault"
-	"github.com/mitodl/concourse-vault-resource/vault/util"
+	"github.com/mschuchard/concourse-vault-resource/concourse"
+	"github.com/mschuchard/concourse-vault-resource/vault"
+	"github.com/mschuchard/concourse-vault-resource/vault/util"
 )
 
 // minimum coverage testing for helper functions

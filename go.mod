@@ -1,4 +1,4 @@
-module github.com/mitodl/concourse-vault-resource
+module github.com/mschuchard/concourse-vault-resource
 
 go 1.21
 

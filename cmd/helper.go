@@ -7,8 +7,8 @@ import (
 
 	vaultapi "github.com/hashicorp/vault/api"
 
-	"github.com/mitodl/concourse-vault-resource/concourse"
-	"github.com/mitodl/concourse-vault-resource/vault"
+	"github.com/mschuchard/concourse-vault-resource/concourse"
+	"github.com/mschuchard/concourse-vault-resource/vault"
 )
 
 // instantiates vault client from concourse source

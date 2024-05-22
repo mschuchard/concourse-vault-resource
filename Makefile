@@ -7,7 +7,7 @@ tidy:
 	@go mod tidy
 
 get:
-	@go get github.com/mitodl/concourse-vault-resource
+	@go get github.com/mschuchard/concourse-vault-resource
 
 build: tidy
 	@go build -o check cmd/check/main.go
@@ -31,4 +31,5 @@ unit:
 	@go test -v ./...
 
 resource:
-	@docker build -t mitodl/concourse-vault-resource -t mitodl/concourse-vault-resource:${VERSION_TAG} .
+	@docker build -t mschuchard/concourse-vault-resource -t mschuchard/concourse-vault-resource:${TAG} .
+  @docker push -a mschuchard/concourse-vault-resource
