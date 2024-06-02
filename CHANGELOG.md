@@ -1,4 +1,4 @@
-### 1.0.2 (Next)
+### 1.0.2
 - Gracefully handle errors instead of simple logging and panic.
 - Fix error collection for Vault read/write interactions during in/out steps.
 
