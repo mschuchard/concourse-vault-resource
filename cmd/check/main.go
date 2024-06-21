@@ -21,8 +21,8 @@ func main() {
 	}
 	secretSource := checkRequest.Source.Secret
 
-	// return immediately if secret unspecified in source
-	if secretSource == (concourse.SecretSource{}) || secretSource.Engine != "kv2" {
+	// return immediately if secret unspecified in source or is kv1
+	if secretSource == (concourse.SecretSource{}) || secretSource.Engine == "kv1" {
 		// dummy check response
 		dummyResponse := concourse.NewCheckResponse([]concourse.Version{{Version: "0"}})
 		// format checkResponse into json
@@ -55,12 +55,16 @@ func main() {
 	}
 
 	// assign input and get version and initialize versions slice
-	getVersionInt, err := strconv.Atoi(getVersion)
-	inputVersion, _ := strconv.Atoi(checkRequest.Version.Version)
-	versions := []concourse.Version{}
-
-	// if getVersion could not be converted to int then just use the original string
+	inputVersion, err := strconv.Atoi(checkRequest.Version.Version)
 	if err != nil {
+		log.Fatalf("the input version '%s' in source is not a valid integer", checkRequest.Version.Version)
+	}
+	versions := []concourse.Version{}
+	getVersionInt, err := strconv.Atoi(getVersion)
+
+	// if getVersion could not be converted to int then this must be a dynamically generated credential
+	if err != nil {
+		// dummy on this git commit
 		versions = []concourse.Version{{Version: getVersion}}
 	} else {
 		// validate that the input version is <= the latest retrieved version

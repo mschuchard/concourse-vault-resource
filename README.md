@@ -23,7 +23,7 @@ This repository and project is based on the work performed for [MITODL](https://
 
 - `insecure`: _optional_ Whether to utilize an insecure connection with Vault (e.g. no HTTP or HTTPS with self-signed cert). default: `false`
 
-- `secret`: _required/optional_ Required for `check` step. Mutually exclusive with `params` for `in` step, but one of the two must be specified. Note this value is ignored during `out` as it is not possible for it to have any effect with that step's functionality. The following YAML schema is required for the secret specification.
+- `secret`: _required/optional_ Required for `check` step if renewing a dynamic secret/credential, or specifying a version of a KV2 secret. KV1 secrets are ignored due to lack of versioning support in Vault.  Mutually exclusive with `params` for `in` step, but one of the two must be specified ("exclusive or" conditional). Note this value is ignored during `out` as it is not possible for it to have any effect with that step's functionality. The following YAML schema is required for the secret specification.
 
 ```yaml
 secret:
@@ -160,6 +160,8 @@ resources:
       engine: kv2
       mount: secret
       path: path/to/secret
+  version:
+    version: 3
 
 jobs:
 - name: do something
