@@ -62,10 +62,16 @@ func main() {
 	versions := []concourse.Version{}
 	getVersionInt, err := strconv.Atoi(getVersion)
 
-	// if getVersion could not be converted to int then this must be a dynamically generated credential
+	// if getVersion could not be converted to int then this may be a dynamically generated credential
 	if err != nil {
-		// dummy on this git commit
-		versions = []concourse.Version{{Version: getVersion}}
+		if secretSource.Engine != "kv2" {
+			// this is a dynamically generated credential so renew it
+			log.Printf("the secret '%s' is dynamic and will be renewed", secret.Path())
+			secret.Renew(vaultClient, secret.Path())
+		} else {
+			// dummy a return for the versions using the original version return
+			versions = []concourse.Version{{Version: getVersion}}
+		}
 	} else {
 		// validate that the input version is <= the latest retrieved version
 		if inputVersion > getVersionInt {
