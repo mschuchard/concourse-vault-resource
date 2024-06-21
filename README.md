@@ -1,6 +1,6 @@
 # Concourse Vault Resource
 
-A [concourse-ci](https://concourse-ci.org) resource for interacting with secrets via [Vault](https://www.vaultproject.io). This plugin's code at `HEAD` is currently tested against Vault version 1.14.10. The most recent release was tested against 1.14.10.
+A [concourse-ci](https://concourse-ci.org) resource for interacting with secrets via [Vault](https://www.vaultproject.io). This plugin's code at `HEAD` is currently tested against Vault version 1.15.6. The most recent release was tested against 1.14.10.
 
 This resource's container image is currently hosted at [matthewschuchard/concourse-vault-resource](https://hub.docker.com/repository/docker/matthewschuchard/concourse-vault-resource) for usage within Concourse.
 

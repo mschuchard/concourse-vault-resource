@@ -24,5 +24,7 @@ jobs:
       run: apk add --no-cache --update build-base
     - name: build
       run: make build
+    - name: bootstrap vault server
+      run: make bootstrap
     - name: unit test
       run: make unit

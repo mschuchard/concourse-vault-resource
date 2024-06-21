@@ -82,6 +82,7 @@ func (config *VaultConfig) New() error {
 		log.Print("the specified Vault Token is invalid")
 		return errors.New("invalid vault token")
 	}
+
 	// default aws mount path and role
 	if config.Engine == awsIam {
 		if len(config.AWSMountPath) == 0 {
