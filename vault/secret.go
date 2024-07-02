@@ -139,7 +139,7 @@ func (secret *vaultSecret) Renew(client *vault.Client, leaseIdSuffix string) (st
 	}
 
 	// determine full lease id
-	leaseId := secret.mount + "/creds/" + leaseIdSuffix
+	leaseId := secret.mount + "/creds/" + secret.path + "/" + leaseIdSuffix
 
 	// renew the secret lease
 	rawSecret, err := client.Sys().Renew(leaseId, 0)
@@ -148,6 +148,7 @@ func (secret *vaultSecret) Renew(client *vault.Client, leaseIdSuffix string) (st
 		log.Print(err)
 		return "0", Metadata{}, err
 	}
+	log.Printf("the lease for %s was successfully renewed", leaseId)
 
 	// calculate the expiration time for version
 	expirationTime := time.Now().Local().Add(time.Second * time.Duration(rawSecret.LeaseDuration))

@@ -64,10 +64,15 @@ func main() {
 
 	// if getVersion could not be converted to int then this may be a dynamically generated credential
 	if err != nil {
-		if secretSource.Engine != "kv2" {
+		if secret.Dynamic() {
 			// this is a dynamically generated credential so renew it
 			log.Printf("the secret '%s' is dynamic and will be renewed", secret.Path())
-			secret.Renew(vaultClient, secret.Path())
+			// validate leaseId input specified
+			if len(secretSource.LeaseId) == 36 {
+				secret.Renew(vaultClient, secretSource.LeaseId)
+			} else {
+				log.Printf("the specified lease id %s is invalid", secretSource.LeaseId)
+			}
 		} else {
 			// dummy a return for the versions using the original version return
 			versions = []concourse.Version{{Version: getVersion}}

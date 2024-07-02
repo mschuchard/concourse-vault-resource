@@ -36,9 +36,10 @@ type secretsPut struct {
 }
 
 type SecretSource struct {
-	Engine string `json:"engine"`
-	Mount  string `json:"mount"`
-	Path   string `json:"path"`
+	Engine  string `json:"engine"`
+	Mount   string `json:"mount"`
+	Path    string `json:"path"`
+	LeaseId string `json:"lease_id"`
 }
 
 type dbSecretValue struct {
