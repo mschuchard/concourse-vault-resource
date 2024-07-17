@@ -31,6 +31,9 @@ func main() {
 			log.Fatal(err)
 		}
 
+		log.Print("source does not contain a secret, or a secret with kv version 1 engine")
+		log.Print("concourse version will be 'dummied' to value '0'")
+
 		return
 	}
 

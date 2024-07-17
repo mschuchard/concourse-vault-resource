@@ -104,9 +104,8 @@ func NewCheckRequest(pipelineJSON io.Reader) (*checkRequest, error) {
 		return nil, err
 	}
 
-	// initialize empty version if unspecified
+	// validate version not specified for kv1
 	if checkRequest.Source.Secret.Engine == "kv1" && checkRequest.Version != (Version{}) {
-		// validate version not specified for kv1
 		log.Print("version cannot be specified in conjunction with a kv version 1 engine secret")
 		return nil, errors.New("secret version specified with kv1")
 	}
