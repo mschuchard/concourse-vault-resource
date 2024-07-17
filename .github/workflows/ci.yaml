@@ -21,10 +21,12 @@ jobs:
     - name: checkout
       uses: actions/checkout@v4
     - name: install prereqs
-      run: apk add --no-cache --update build-base
+      run: apk add --no-cache --update build-base && mkdir -p /opt/resource
     - name: build
       run: make build
     - name: bootstrap vault server
       run: make bootstrap
     - name: unit test
       run: make unit
+    - name: check test
+      run: go test -v ./cmd/check

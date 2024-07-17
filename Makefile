@@ -20,6 +20,7 @@ release: tidy
 	@go build -o out -ldflags="-s -w" cmd/out/main.go
 
 bootstrap:
+	@rm -f nohup.out
 	# using cli for this avoids importing the entire vault/command package
 	@nohup vault server -dev -dev-root-token-id="abcdefghijklmnopqrstuvwxyz09" &
 	@go test -v -run TestBootstrap ./vault/util
@@ -28,7 +29,10 @@ shutdown:
 	@killall vault
 
 unit:
-	@go test -v ./...
+	@go test -v ./cmd ./concourse ./vault/...
+
+accept:
+	@go test -v ./cmd/check ./cmd/in ./cmd/out
 
 resource:
 	@docker build -t mschuchard/concourse-vault-resource -t mschuchard/concourse-vault-resource:${TAG} .

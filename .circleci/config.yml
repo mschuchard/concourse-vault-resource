@@ -11,7 +11,7 @@ jobs:
     - checkout
     - run:
         name: install prereqs
-        command: apk add --no-cache --update build-base
+        command: apk add --no-cache --update build-base && mkdir -p /opt/resource
     - run:
         name: build
         command: make build
@@ -21,6 +21,9 @@ jobs:
     - run:
         name: unit test
         command: make unit
+    - run:
+        name: check test
+        command: go test -v ./cmd/check
 
 workflows:
   execute_tests:
