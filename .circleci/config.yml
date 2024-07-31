@@ -19,11 +19,11 @@ jobs:
         name: bootstrap vault server
         command: make bootstrap
     - run:
-        name: unit test
-        command: make unit
-    - run:
         name: check test
         command: go test -v ./cmd/check
+    - run:
+        name: unit test
+        command: make unit
 
 workflows:
   execute_tests:

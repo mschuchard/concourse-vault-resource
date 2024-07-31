@@ -26,7 +26,7 @@ jobs:
       run: make build
     - name: bootstrap vault server
       run: make bootstrap
-    - name: unit test
-      run: make unit
     - name: check test
       run: go test -v ./cmd/check
+    - name: unit test
+      run: make unit
