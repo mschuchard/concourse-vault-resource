@@ -19,17 +19,19 @@ This repository and project is based on the work performed for [MITODL](https://
 
 - `aws_vault_role`: _optional_ The Vault role for the AWS authentication login to Vault. Parameter is ignored if authentication engine is not `aws`. default: (Vault role in utilized AWS authentication engine with the same name as the current utilized AWS IAM Role)
 
-- `token`: _optional_ The token for the token authentication engine. Required if `auth_engine` parameter is `token`.
+- `token`: _optional_ The token for the token authentication engine. Required if `auth_engine` parameter is `token`. default: empty string
 
 - `insecure`: _optional_ Whether to utilize an insecure connection with Vault (e.g. no HTTP or HTTPS with self-signed cert). default: `false`
 
-- `secret`: _required/optional_ Required for `check` step if renewing a dynamic secret/credential, or specifying a version of a KV2 secret. KV1 secrets are ignored due to lack of versioning support in Vault.  Mutually exclusive with `params` for `in` step, but one of the two must be specified ("exclusive or" conditional). Note this value is ignored during `out` as it is not possible for it to have any effect with that step's functionality. The following YAML schema is required for the secret specification.
+- `secret`: _required/optional_ Required for `check` step if automatically renewing a dynamic secret/credential (this occurs when a non-KV secret is input for this value), or specifying an exact version of a KV2 secret (otherwise latest; see below `version` subsection). **Automatic renewal of dynamic secrets is a beta feature.** KV1 secrets are ignored due to lack of versioning support in Vault.  Mutually exclusive with `params` for `in` step, but one of the two must be specified ("exclusive or" conditional). Note this value is ignored during `out` as it is not possible for it to have any effect with that step's functionality. The following YAML schema is required for the secret specification. default: `nil`
 
 ```yaml
 secret:
   engine: <secret engine>
   mount: <secret mount path>
   path: <secret path>
+  # this is ignored for non-dynamic secrets
+  lease_id: <dynamic secret lease id>
 ```
 
 ### `version`: designates the specific version of a secret
@@ -40,7 +42,7 @@ NOTES:
 - The `version` input is ignored for `in` with `params` as it is associated with a single secret path, and therefore only functions when peered with `source` for `check` or `in`.
 
 **parameters**
-- `version`: _optional_ The following YAML schema is required for the version specification.
+- `version`: _optional_ The following YAML schema is required for the version specification. default: `nil`
 
 ```yaml
 version:
@@ -56,7 +58,7 @@ version:
 
 ### `check`: returns secret versions between input version and retrieved version sequentially and inclusive
 
-NOTE: currently only the KV2 secrets engine is supported.  
+NOTE: currently the KV1 secrets engine is unsupported due to lack of versioning  
 NOTE: if the specified secret is dynamic, then the input version is ignored because the comparison is between the current time and the secret expiration time
 
 This step has no parameters, and utilizes the `source` and `version` values for functionality. It also executes automatically during resource instantiation.
@@ -73,7 +75,7 @@ Example output for a KV2 secret with Concourse input version `1` and retrieved V
 
 NOTE: For dynamic secret renewal the `path` must be suffixed with the same `/` and SHA suffix from its associated Lease ID (this can be inspected within the Concourse metadata returned when generating the initial dynamic secret).
 
-- `<secret_mount path>`: _required/optional_ Mutually exclusive with `source.secret`, but one of the two must be specified. One or more map/hash/dictionary of the following YAML schema for specifying the secrets to retrieve, generate, or renew.
+- `<secret_mount path>`: _required/optional_ Mutually exclusive with `source.secret`, but one of the two must be specified. One or more map/hash/dictionary of the following YAML schema for specifying the secrets to retrieve, generate, or renew. If a version of a KV2 secret other than the latest is desired, then the `source.secret` must be used instead.
 
 ```yaml
 <secret_mount_path>:
@@ -142,7 +144,7 @@ resource_types:
 - name: vault
   type: docker-image
   source:
-    repository: matthewschuchard/concourse-vault-resource:1.0
+    repository: matthewschuchard/concourse-vault-resource:1.1
     tag: latest
 
 resources:
@@ -162,6 +164,15 @@ resources:
       path: path/to/secret
   version:
     version: 3
+- name: vault-secret-renew
+  type: vault
+  source:
+    address: https://mitodl.vault.com:8200
+    token: abcdefghijklmnopqrstuvwxyz09
+    secret:
+      engine: database
+      path: readonly
+      lease_id: '27e1b9a1-27b8-83d9-9fe0-d99d786bdc83'
 
 jobs:
 - name: do something

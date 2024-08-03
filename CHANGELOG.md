@@ -1,4 +1,4 @@
-### 1.1.0 (Next)
+### 1.1.0
 - `check` step automatic renewal of dynamic secrets (beta).
 
 ### 1.0.2
