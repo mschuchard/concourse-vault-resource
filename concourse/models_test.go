@@ -51,14 +51,22 @@ func TestCheckResponse(test *testing.T) {
 
 // test inRequest constructor
 func TestNewInRequest(test *testing.T) {
-	pipelineJSON, _ := os.OpenFile("../cmd/in/fixtures/token_kv_params.json", os.O_RDONLY, 0o444)
+	pipelineJSON, err := os.OpenFile("../cmd/in/fixtures/token_kv_params.json", os.O_RDONLY, 0o444)
+	if err != nil {
+		test.Error(err)
+	}
+
 	newInRequest, err := NewInRequest(pipelineJSON)
 	if err != nil {
 		test.Error("in request failed to construct")
 		test.Error(err)
 	}
 
-	pipelineJSON, _ = os.OpenFile("../cmd/in/fixtures/token_kv_params.json", os.O_RDONLY, 0o444)
+	pipelineJSON, err = os.OpenFile("../cmd/in/fixtures/token_kv_params.json", os.O_RDONLY, 0o444)
+	if err != nil {
+		test.Error(err)
+	}
+
 	var expectedIn inRequest
 	json.NewDecoder(pipelineJSON).Decode(&expectedIn)
 
@@ -88,14 +96,22 @@ func TestNewInResponse(test *testing.T) {
 
 // test outRequest constructor
 func TestNewOutRequest(test *testing.T) {
-	pipelineJSON, _ := os.OpenFile("../cmd/out/fixtures/token_kv.json", os.O_RDONLY, 0o444)
+	pipelineJSON, err := os.OpenFile("../cmd/out/fixtures/token_kv.json", os.O_RDONLY, 0o444)
+	if err != nil {
+		test.Error(err)
+	}
+
 	newOutRequest, err := NewOutRequest(pipelineJSON)
 	if err != nil {
 		test.Error("out request failed to construct")
 		test.Error(err)
 	}
 
-	pipelineJSON, _ = os.OpenFile("../cmd/out/fixtures/token_kv.json", os.O_RDONLY, 0o444)
+	pipelineJSON, err = os.OpenFile("../cmd/out/fixtures/token_kv.json", os.O_RDONLY, 0o444)
+	if err != nil {
+		test.Error(err)
+	}
+
 	var expectedOut outRequest
 	json.NewDecoder(pipelineJSON).Decode(&expectedOut)
 
