@@ -1,3 +1,6 @@
+### 1.1.1 (Next)
+- Improve Lease ID validation.
+
 ### 1.1.0
 - `check` step automatic renewal of dynamic secrets (beta).
 

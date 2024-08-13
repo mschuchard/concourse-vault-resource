@@ -37,6 +37,15 @@ func TestCheckRequest(test *testing.T) {
 		test.Errorf("expected Source Token field to be: abcdefghijklmnopqrstuvwxyz09, actual: %s", source.Token)
 		test.Errorf("expected Source Secret field to be: %v, actual: %v", expectedSecretSource, source.Secret)
 	}
+
+	pipelineJSON, err = os.OpenFile("../cmd/check/fixtures/bad_lease_id.json", os.O_RDONLY, 0o444)
+	if err != nil {
+		test.Error(err)
+	}
+
+	if _, err = NewCheckRequest(pipelineJSON); err == nil || err.Error() != "invalid lease id parameter" {
+		test.Error("invalid lease id parameter value did not fail validation")
+	}
 }
 
 // test checkresponse constructor
