@@ -5,6 +5,7 @@ import (
 	"errors"
 	"io"
 	"log"
+	"regexp"
 )
 
 // custom type structs
@@ -105,9 +106,18 @@ func NewCheckRequest(pipelineJSON io.Reader) (*checkRequest, error) {
 	}
 
 	// validate version not specified for kv1
-	if checkRequest.Source.Secret.Engine == "kv1" && checkRequest.Version != (Version{}) {
+	secretSource := checkRequest.Source.Secret
+	if secretSource.Engine == "kv1" && checkRequest.Version != (Version{}) {
 		log.Print("version cannot be specified in conjunction with a kv version 1 engine secret")
 		return nil, errors.New("secret version specified with kv1")
+	}
+
+	// validate lease id if specified
+	if len(secretSource.LeaseId) > 0 {
+		if matched, err := regexp.MatchString(`\w{8}-\w{4}-\w{4}-\w{4}-\w{12}`, secretSource.LeaseId); !matched || err != nil {
+			log.Printf("the specified lease id %s is invalid", secretSource.LeaseId)
+			return nil, errors.New("invalid lease id parameter")
+		}
 	}
 
 	return &checkRequest, nil
