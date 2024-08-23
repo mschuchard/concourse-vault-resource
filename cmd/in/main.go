@@ -40,9 +40,16 @@ func main() {
 			for _, secretPath := range secretParams.Paths {
 				// initialize vault secret from concourse params
 				secret, nestedErr := vault.NewVaultSecret(secretParams.Engine, mount, secretPath)
+				// on failure log the issue and then attempt next secret
 				if nestedErr != nil {
 					log.Print("failed to construct secret from Concourse parameters")
-					log.Fatal(nestedErr)
+					log.Printf("the secret with engine %s at mount %s and path %s will not be read", secretParams.Engine, mount, secretPath)
+
+					// join error into collection
+					err = errors.Join(err, nestedErr)
+
+					// attempt next secret immediately
+					continue
 				}
 				// declare identifier
 				identifier := mount + "-" + secretPath
@@ -64,18 +71,23 @@ func main() {
 	} else { // read secret from source
 		// initialize vault secret from concourse source params
 		secret, nestedErr := vault.NewVaultSecret(secretSource.Engine, secretSource.Mount, secretSource.Path)
+		// on failure log the issue and then attempt next secret
 		if nestedErr != nil {
 			log.Print("failed to construct secret from Concourse source parameters")
-			log.Fatal(nestedErr)
+			log.Printf("the secret with engine %s at mount %s and path %s will not be read", secretSource.Engine, secretSource.Mount, secretSource.Path)
+
+			// join error into collection
+			err = errors.Join(err, nestedErr)
+		} else {
+			// declare identifier and rawSecret
+			identifier := secretSource.Mount + "-" + secretSource.Path
+			// return and assign the secret values for the given path
+			secretValues[identifier], inResponse.Version[identifier], secretMetadata, nestedErr = secret.SecretValue(vaultClient, inRequest.Version.Version)
+			// join error into collection
+			err = errors.Join(err, nestedErr)
+			// convert rawSecret to concourse metadata and append to metadata
+			inResponse.Metadata = append(inResponse.Metadata, helper.VaultToConcourseMetadata(identifier, secretMetadata)...)
 		}
-		// declare identifier and rawSecret
-		identifier := secretSource.Mount + "-" + secretSource.Path
-		// return and assign the secret values for the given path
-		secretValues[identifier], inResponse.Version[identifier], secretMetadata, nestedErr = secret.SecretValue(vaultClient, inRequest.Version.Version)
-		// join error into collection
-		err = errors.Join(err, nestedErr)
-		// convert rawSecret to concourse metadata and append to metadata
-		inResponse.Metadata = append(inResponse.Metadata, helper.VaultToConcourseMetadata(identifier, secretMetadata)...)
 	}
 
 	// fatally exit if any secret Read operation failed

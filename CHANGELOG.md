@@ -1,5 +1,6 @@
 ### 1.1.1 (Next)
 - Improve Lease ID validation.
+- Warn instead of error if a single secret interaction fails.
 
 ### 1.1.0
 - `check` step automatic renewal of dynamic secrets (beta).

@@ -35,9 +35,16 @@ func main() {
 			var secretMetadata vault.Metadata
 			// initialize vault secret from concourse params
 			secret, nestedErr := vault.NewVaultSecret(secretParams.Engine, mount, secretPath)
+			// on failure log the issue and then attempt next secret
 			if nestedErr != nil {
 				log.Print("failed to construct secret from Concourse parameters")
-				log.Fatal(nestedErr)
+				log.Printf("the secret with engine %s at mount %s and path %s will not be created or updated", secretParams.Engine, mount, secretPath)
+
+				// join error into collection
+				err = errors.Join(err, nestedErr)
+
+				// attempt next secret immediately
+				continue
 			}
 			// declare identifier and rawSecret
 			identifier := mount + "-" + secretPath
@@ -50,7 +57,7 @@ func main() {
 		}
 	}
 
-	// fatally exit if any secret Read operation failed
+	// fatally exit if any secret Write operation failed
 	if err != nil {
 		log.Print("one or more attempted secret Create/Update operations failed")
 		log.Fatal(err)
