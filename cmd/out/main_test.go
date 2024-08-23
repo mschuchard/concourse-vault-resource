@@ -5,7 +5,7 @@ import (
 	_ "testing"
 )
 
-func ExampleMain() {
+func Example() {
 	// deliver test pipeline file content as stdin to "out" the same as actual pipeline execution
 	os.Stdin, _ = os.OpenFile("fixtures/token_kv.json", os.O_RDONLY, 0o644)
 	defer os.Stdin.Close()

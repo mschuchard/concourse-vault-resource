@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func ExampleMain() {
+func Example() {
 	// defer stdin close and establish workdir from argsp[1]
 	defer os.Stdin.Close()
 	os.Args[1] = "/opt/resource"
@@ -21,7 +21,7 @@ func ExampleMain() {
 	}
 }
 
-func TestMain(test *testing.T) {
+func Test(test *testing.T) {
 	// defer stdin close and establish workdir from argsp[1]
 	defer os.Stdin.Close()
 	os.Args[1] = "/opt/resource"

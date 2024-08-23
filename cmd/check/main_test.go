@@ -5,7 +5,7 @@ import (
 	_ "testing"
 )
 
-func ExampleMain() {
+func Example() {
 	// defer stdin close and establish workdir from argsp[1]
 	defer os.Stdin.Close()
 
