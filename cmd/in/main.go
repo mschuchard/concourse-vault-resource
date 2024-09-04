@@ -83,10 +83,14 @@ func main() {
 			identifier := secretSource.Mount + "-" + secretSource.Path
 			// return and assign the secret values for the given path
 			secretValues[identifier], inResponse.Version[identifier], secretMetadata, nestedErr = secret.SecretValue(vaultClient, inRequest.Version.Version)
-			// join error into collection
-			err = errors.Join(err, nestedErr)
-			// convert rawSecret to concourse metadata and append to metadata
-			inResponse.Metadata = append(inResponse.Metadata, helper.VaultToConcourseMetadata(identifier, secretMetadata)...)
+
+			if nestedErr != nil {
+				// join error into collection
+				err = errors.Join(err, nestedErr)
+			} else {
+				// convert rawSecret to concourse metadata and append to metadata
+				inResponse.Metadata = append(inResponse.Metadata, helper.VaultToConcourseMetadata(identifier, secretMetadata)...)
+			}
 		}
 	}
 

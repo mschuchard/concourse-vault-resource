@@ -50,10 +50,14 @@ func main() {
 			identifier := mount + "-" + secretPath
 			// write the secret value to the path for the specified mount and engine
 			outResponse.Version[identifier], secretMetadata, nestedErr = secret.PopulateKVSecret(vaultClient, secretValue, secretParams.Patch)
-			// join error into collection
-			err = errors.Join(err, nestedErr)
-			// convert rawSecret to concourse metadata and append to metadata
-			outResponse.Metadata = append(outResponse.Metadata, helper.VaultToConcourseMetadata(identifier, secretMetadata)...)
+
+			if nestedErr != nil {
+				// join error into collection
+				err = errors.Join(err, nestedErr)
+			} else {
+				// convert rawSecret to concourse metadata and append to metadata
+				outResponse.Metadata = append(outResponse.Metadata, helper.VaultToConcourseMetadata(identifier, secretMetadata)...)
+			}
 		}
 	}
 
