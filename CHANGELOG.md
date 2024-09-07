@@ -1,4 +1,4 @@
-### 1.1.1 (Next)
+### 1.1.1
 - Improve Lease ID validation.
 - Warn instead of error if a single secret interaction fails.
 - Do not attempt to append secret metadata if secret interaction fails.
