@@ -26,7 +26,6 @@ type MetadataEntry struct {
 type secrets struct {
 	Engine string   `json:"engine"`
 	Paths  []string `json:"paths"`
-	Renew  bool     `json:"renew"`
 }
 
 type secretsPut struct {

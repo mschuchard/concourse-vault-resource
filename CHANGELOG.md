@@ -1,3 +1,6 @@
+### 1.2.0 (Next)
+- Remove `renew` parameter from in/get step.
+
 ### 1.1.1
 - Improve Lease ID validation.
 - Warn instead of error if a single secret interaction fails.

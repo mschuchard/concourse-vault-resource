@@ -54,14 +54,8 @@ func main() {
 				// declare identifier
 				identifier := mount + "-" + secretPath
 
-				// renew or retrieve/generate
-				if secretParams.Renew {
-					// return updated metadata for dynamic secret after lease renewal
-					inResponse.Version[identifier], secretMetadata, nestedErr = secret.Renew(vaultClient, secretPath)
-				} else {
-					// return and assign the secret values for the given path
-					secretValues[identifier], inResponse.Version[identifier], secretMetadata, nestedErr = secret.SecretValue(vaultClient, "")
-				}
+				// return and assign the secret values for the given path
+				secretValues[identifier], inResponse.Version[identifier], secretMetadata, nestedErr = secret.SecretValue(vaultClient, "")
 				// join error into collection
 				err = errors.Join(err, nestedErr)
 				// convert rawSecret to concourse metadata and append to metadata
