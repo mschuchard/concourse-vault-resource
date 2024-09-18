@@ -15,7 +15,7 @@ on:
 
 jobs:
   go-build:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
     container: matthewschuchard/vault-api
     steps:
     - name: checkout
