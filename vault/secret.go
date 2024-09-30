@@ -14,6 +14,7 @@ type secretEngine string
 const (
 	database  secretEngine = "database"
 	aws       secretEngine = "aws"
+	azure     secretEngine = "azure"
 	keyvalue1 secretEngine = "kv1"
 	keyvalue2 secretEngine = "kv2"
 )
@@ -57,7 +58,7 @@ func NewVaultSecret(engineString string, mount string, path string) (*vaultSecre
 
 	// determine if secret is dynamic (currently unused)
 	switch engine {
-	case database, aws:
+	case database, aws, azure:
 		vaultSecret.dynamic = true
 	case keyvalue1, keyvalue2:
 		vaultSecret.dynamic = false
@@ -74,6 +75,8 @@ func NewVaultSecret(engineString string, mount string, path string) (*vaultSecre
 			vaultSecret.mount = "database"
 		case aws:
 			vaultSecret.mount = "aws"
+		case azure:
+			vaultSecret.mount = "azure"
 		case keyvalue1:
 			vaultSecret.mount = "kv"
 		case keyvalue2:
@@ -107,7 +110,7 @@ func (secret *vaultSecret) Dynamic() bool {
 // return secret value, version, metadata, and possible error (GET/READ/READ)
 func (secret *vaultSecret) SecretValue(client *vault.Client, version string) (map[string]interface{}, string, Metadata, error) {
 	switch secret.engine {
-	case database, aws:
+	case database, aws, azure:
 		return secret.generateCredentials(client)
 	case keyvalue1, keyvalue2:
 		return secret.retrieveKVSecret(client, version)

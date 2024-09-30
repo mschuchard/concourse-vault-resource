@@ -38,13 +38,17 @@ type dbSecretValue struct {
 	Username string `json:"username"`
 	Password string `json:"password"`
 }
-type kvSecretValue map[string]interface{}
 type awsSecretValue struct {
-	AccessKey     string `json:"access_key"`
-	SecretKey     string `json:"secret_key"`
-	SecurityToken string `json:"security_token,omitempty"`
-	ARN           string `json:"arn"`
+	AccessKey    string `json:"access_key"`
+	SecretKey    string `json:"secret_key"`
+	SessionToken string `json:"session_token"`
+	ARN          string `json:"arn,omitempty"`
 }
+type azureSecretValue struct {
+	ClientID     string `json:"client_id"`
+	ClientSecret string `json:"client_secret"`
+}
+type kvSecretValue map[string]interface{}
 
 // concourse standard type structs
 type Source struct {

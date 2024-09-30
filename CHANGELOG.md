@@ -1,5 +1,6 @@
 ### 1.2.0 (Next)
 - Remove `renew` parameter from in/get step.
+- Add Azure secret engine credentials support.
 
 ### 1.1.1
 - Improve Lease ID validation.

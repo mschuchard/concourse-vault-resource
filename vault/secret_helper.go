@@ -14,6 +14,7 @@ import (
 func (secret *vaultSecret) generateCredentials(client *vault.Client) (map[string]interface{}, string, Metadata, error) {
 	// initialize api endpoint for cred generation
 	endpoint := secret.mount + "/creds/" + secret.path
+
 	// GET the secret from the API endpoint
 	response, err := client.Logical().Read(endpoint)
 	if err != nil {
@@ -21,6 +22,7 @@ func (secret *vaultSecret) generateCredentials(client *vault.Client) (map[string
 		log.Print(err)
 		return map[string]interface{}{}, "0", Metadata{}, err
 	}
+
 	// calculate the expiration time for version
 	expirationTime := time.Now().Local().Add(time.Second * time.Duration(response.LeaseDuration))
 
