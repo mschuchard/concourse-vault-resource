@@ -8,19 +8,12 @@ import (
 	"regexp"
 )
 
-// custom type structs
-// key-value pairs would be arbitrary for kv1 and kv2, but are standardized schema for credential generators
-type secretValue map[string]interface{}
-
-// key is secret "<mount>-<path>", and value is secret keys and values
-type SecretValues map[string]secretValue
-
-// key is "<mount>-<path>" and value is version of secret
-type responseVersion map[string]string
-
-type MetadataEntry struct {
-	Name  string `json:"name"`
-	Value string `json:"value"`
+// custom type structs supporting concourse structs
+type SecretSource struct {
+	Engine  string `json:"engine"`
+	Mount   string `json:"mount"`
+	Path    string `json:"path"`
+	LeaseId string `json:"lease_id"`
 }
 
 type secrets struct {
@@ -28,18 +21,17 @@ type secrets struct {
 	Paths  []string `json:"paths"`
 }
 
+// key-value pairs would be arbitrary for kv1 and kv2, but are standardized schema for credential generators
+type secretValue map[string]interface{}
+
+// key is secret "<mount>-<path>", and value is secret keys and values
+type SecretValues map[string]secretValue
+
 type secretsPut struct {
 	Engine string `json:"engine"`
 	Patch  bool   `json:"patch"`
 	// key is secret path
 	Secrets SecretValues `json:"secrets"`
-}
-
-type SecretSource struct {
-	Engine  string `json:"engine"`
-	Mount   string `json:"mount"`
-	Path    string `json:"path"`
-	LeaseId string `json:"lease_id"`
 }
 
 type dbSecretValue struct {
@@ -68,6 +60,13 @@ type Source struct {
 type Version struct {
 	Version string `json:"version"`
 }
+
+type MetadataEntry struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
+type responseVersion map[string]string // key is "<mount>-<path>" and value is version of secret
 
 // check/in/out custom type structs for inputs and outputs
 type checkRequest struct {
