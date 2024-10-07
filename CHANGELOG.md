@@ -1,6 +1,6 @@
 ### 1.2.0 (Next)
 - Remove `renew` parameter from in/get step.
-- Add Azure secret engine credentials support.
+- Add Azure, Consul, Kubernetes, Nomad, RabbitMQ, SSH, and Terraform Cloud secret engine generate credentials support.
 
 ### 1.1.1
 - Improve Lease ID validation.

@@ -62,15 +62,11 @@ func NewVaultSecret(engineString string, mount string, path string) (*vaultSecre
 		mount:  mount,
 	}
 
-	// determine if secret is dynamic (currently unused)
-	switch engine {
-	case database, aws, azure, consul, kubernetes, nomad, rabbitmq, ssh, terraform:
-		vaultSecret.dynamic = true
-	case keyvalue1, keyvalue2:
+	// determine if secret is dynamic
+	if engine == keyvalue1 || engine == keyvalue2 {
 		vaultSecret.dynamic = false
-	default:
-		log.Printf("an invalid secret engine %s was selected", engine)
-		return nil, errors.New("invalid secret engine")
+	} else {
+		vaultSecret.dynamic = true
 	}
 
 	// determine default mount path if not specified
@@ -127,14 +123,10 @@ func (secret *vaultSecret) Dynamic() bool {
 
 // return secret value, version, metadata, and possible error (GET/READ/READ)
 func (secret *vaultSecret) SecretValue(client *vault.Client, version string) (map[string]interface{}, string, Metadata, error) {
-	switch secret.engine {
-	case database, aws, azure, consul, kubernetes, nomad, rabbitmq, ssh, terraform:
+	if secret.dynamic {
 		return secret.generateCredentials(client)
-	case keyvalue1, keyvalue2:
+	} else {
 		return secret.retrieveKVSecret(client, version)
-	default:
-		log.Printf("an invalid secret engine %s was selected", secret.engine)
-		return map[string]interface{}{}, "0", Metadata{}, errors.New("invalid secret engine")
 	}
 }
 
