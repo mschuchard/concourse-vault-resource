@@ -12,11 +12,17 @@ import (
 type secretEngine string
 
 const (
-	database  secretEngine = "database"
-	aws       secretEngine = "aws"
-	azure     secretEngine = "azure"
-	keyvalue1 secretEngine = "kv1"
-	keyvalue2 secretEngine = "kv2"
+	database   secretEngine = "database"
+	aws        secretEngine = "aws"
+	azure      secretEngine = "azure"
+	consul     secretEngine = "consul"
+	kubernetes secretEngine = "kubernetes"
+	nomad      secretEngine = "nomad"
+	rabbitmq   secretEngine = "rabbitmq"
+	ssh        secretEngine = "ssh"
+	terraform  secretEngine = "terraform"
+	keyvalue1  secretEngine = "kv1"
+	keyvalue2  secretEngine = "kv2"
 )
 
 // secret metadata
@@ -58,7 +64,7 @@ func NewVaultSecret(engineString string, mount string, path string) (*vaultSecre
 
 	// determine if secret is dynamic (currently unused)
 	switch engine {
-	case database, aws, azure:
+	case database, aws, azure, consul, kubernetes, nomad, rabbitmq, ssh, terraform:
 		vaultSecret.dynamic = true
 	case keyvalue1, keyvalue2:
 		vaultSecret.dynamic = false
@@ -77,6 +83,18 @@ func NewVaultSecret(engineString string, mount string, path string) (*vaultSecre
 			vaultSecret.mount = "aws"
 		case azure:
 			vaultSecret.mount = "azure"
+		case consul:
+			vaultSecret.mount = "consul"
+		case kubernetes:
+			vaultSecret.mount = "kubernetes"
+		case nomad:
+			vaultSecret.mount = "nomad"
+		case rabbitmq:
+			vaultSecret.mount = "rabbitmq"
+		case ssh:
+			vaultSecret.mount = "ssh"
+		case terraform:
+			vaultSecret.mount = "terraform"
 		case keyvalue1:
 			vaultSecret.mount = "kv"
 		case keyvalue2:
@@ -110,7 +128,7 @@ func (secret *vaultSecret) Dynamic() bool {
 // return secret value, version, metadata, and possible error (GET/READ/READ)
 func (secret *vaultSecret) SecretValue(client *vault.Client, version string) (map[string]interface{}, string, Metadata, error) {
 	switch secret.engine {
-	case database, aws, azure:
+	case database, aws, azure, consul, kubernetes, nomad, rabbitmq, ssh, terraform:
 		return secret.generateCredentials(client)
 	case keyvalue1, keyvalue2:
 		return secret.retrieveKVSecret(client, version)
