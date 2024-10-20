@@ -23,11 +23,11 @@ This repository and project is based on the work performed for [MITODL](https://
 
 - `insecure`: _optional_ Whether to utilize an insecure connection with Vault (e.g. no HTTP or HTTPS with self-signed cert). default: `false`
 
-- `secret`: _required/optional_ Required for `check` step if automatically renewing a dynamic secret/credential (this occurs when a non-KV secret is input for this value), or specifying an exact version of a KV2 secret (otherwise latest; see below `version` subsection). **Automatic renewal of dynamic secrets is a beta feature.** KV1 secrets are ignored due to lack of versioning support in Vault.  Mutually exclusive with `params` for `in` step, but one of the two must be specified ("exclusive or" conditional). Note this value is ignored during `out` as it is not possible for it to have any effect with that step's functionality. The following YAML schema is required for the secret specification. default: `nil`
+- `secret`: _required/optional_ Required for `check` step if automatically renewing a dynamic secret/credential (this occurs when a non-KV secret is input for this value), and/or specifying an exact version of a KV2 secret (otherwise latest; see below `version` subsection). **Automatic renewal of dynamic secrets is a beta feature.** KV1 secrets are ignored due to lack of versioning support in Vault.  Mutually exclusive with `params` for `in` step, but one of the two must be specified ("exclusive or" conditional). Note this value is ignored during `out` as it is not possible for it to have any effect with that step's functionality. The following YAML schema is required for the secret specification. default: `nil`
 
 ```yaml
 secret:
-  engine: <secret engine>
+  engine: <secret engine> # supported values: database, aws, azure, consul, kubernetes, nomad, rabbitmq, ssh, terraform, kv1, kv2
   mount: <secret mount path>
   path: <secret path>
   # this is ignored for non-dynamic secrets
@@ -73,17 +73,14 @@ Example output for a KV2 secret with Concourse input version `1` and retrieved V
 
 **parameters**
 
-NOTE: For dynamic secret renewal the `path` must be suffixed with the same `/` and SHA suffix from its associated Lease ID (this can be inspected within the Concourse metadata returned when generating the initial dynamic secret).
-
-- `<secret_mount path>`: _required/optional_ Mutually exclusive with `source.secret`, but one of the two must be specified. One or more map/hash/dictionary of the following YAML schema for specifying the secrets to retrieve, generate, or renew. If a version of a KV2 secret other than the latest is desired, then the `source.secret` must be used instead.
+- `<secret_mount path>`: _required/optional_ Mutually exclusive with `source.secret`, but one of the two must be specified. One or more map/hash/dictionary of the following YAML schema for specifying the secrets to retrieve or generate. If a version of a KV2 secret other than the latest is desired, then the `source.secret` must be used instead.
 
 ```yaml
 <secret_mount_path>:
   paths:
   - <path/to/secret>
   - <path/to/other_secret>
-  engine: <secret engine> # supported values: database, aws, kv1, kv2
-  renew: false # whether to renew the dynamic secret(s) instead of generating
+  engine: <secret engine> # supported values: database, aws, azure, consul, kubernetes, nomad, rabbitmq, ssh, terraform, kv1, kv2
 ```
 
 **usage**
@@ -144,7 +141,7 @@ resource_types:
 - name: vault
   type: docker-image
   source:
-    repository: matthewschuchard/concourse-vault-resource:1.1
+    repository: matthewschuchard/concourse-vault-resource:1.2
     tag: latest
 
 resources:
@@ -164,7 +161,7 @@ resources:
       path: path/to/secret
   version:
     version: 3
-- name: vault-secret-renew
+- name: vault-secret-renew-and-check
   type: vault
   source:
     address: https://mitodl.vault.com:8200
@@ -185,11 +182,6 @@ jobs:
         - readonly
         - other_readonly
         engine: database
-      database-two:
-        paths:
-        - admin/abcdefghijk123456789lmno
-        engine: database
-        renew: true
       secret:
         paths:
         - path/to/secret
