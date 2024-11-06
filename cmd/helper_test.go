@@ -43,15 +43,15 @@ func TestVaultToConcourseMetadata(test *testing.T) {
 
 	concourseMetadata := VaultToConcourseMetadata(secretPath, secretMetadata)
 	expectedConcourseMetadata := []concourse.MetadataEntry{
-		concourse.MetadataEntry{
+		{
 			Name:  secretPath + "-LeaseID",
 			Value: secretMetadata.LeaseID,
 		},
-		concourse.MetadataEntry{
+		{
 			Name:  secretPath + "-LeaseDuration",
 			Value: secretMetadata.LeaseDuration,
 		},
-		concourse.MetadataEntry{
+		{
 			Name:  secretPath + "-Renewable",
 			Value: secretMetadata.Renewable,
 		},

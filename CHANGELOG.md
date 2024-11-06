@@ -1,3 +1,5 @@
+### 1.2.1 (Next)
+
 ### 1.2.0
 - Remove `renew` parameter from in/get step.
 - Add Azure, Consul, Kubernetes, Nomad, RabbitMQ, SSH, and Terraform Cloud secret engine generate credentials support.

@@ -19,7 +19,7 @@ func TestRetrieveKVSecret(test *testing.T) {
 		test.Error(err)
 	}
 
-	kv1Value, version, secretMetadata, err := kv1VaultSecret.retrieveKVSecret(util.VaultClient, "")
+	kv1Value, secretMetadata, err := kv1VaultSecret.retrieveKVSecret(util.VaultClient, "")
 
 	if err != nil {
 		test.Error("kv1 secret retrieval failed")
@@ -28,8 +28,8 @@ func TestRetrieveKVSecret(test *testing.T) {
 	if secretMetadata == (Metadata{}) {
 		test.Error("the kv2 secret retrieval returned empty metadata")
 	}
-	if version != "0" {
-		test.Errorf("the kv1 secret retrieval returned non-zero version: %s", version)
+	if secretMetadata.Version != "0" {
+		test.Errorf("the kv1 secret retrieval returned non-zero version: %s", secretMetadata.Version)
 	}
 	if kv1Value[util.KVKey] != util.KVValue {
 		test.Error("the retrieved kv1 secret value was incorrect")
@@ -42,7 +42,7 @@ func TestRetrieveKVSecret(test *testing.T) {
 		test.Error(err)
 	}
 
-	kv2Value, version, secretMetadata, err := kv2VaultSecret.retrieveKVSecret(util.VaultClient, "")
+	kv2Value, secretMetadata, err := kv2VaultSecret.retrieveKVSecret(util.VaultClient, "")
 
 	if err != nil {
 		test.Error("kv2 secret retrieval failed")
@@ -51,8 +51,8 @@ func TestRetrieveKVSecret(test *testing.T) {
 	if secretMetadata == (Metadata{}) {
 		test.Error("the kv2 secret retrieval returned empty metadata")
 	}
-	if version == "0" {
-		test.Errorf("the kv2 secret retrieval returned an invalid version: %s", version)
+	if secretMetadata.Version == "0" {
+		test.Errorf("the kv2 secret retrieval returned an invalid version: %s", secretMetadata.Version)
 	}
 	if kv2Value[util.KVKey] != util.KVValue {
 		test.Error("the retrieved kv2 secret value was incorrect")
@@ -68,7 +68,7 @@ func TestPopulateKV1Secret(test *testing.T) {
 		test.Error(err)
 	}
 
-	version, secretMetadata, err := kv1VaultSecret.populateKV1Secret(
+	secretMetadata, err := kv1VaultSecret.populateKV1Secret(
 		util.VaultClient,
 		map[string]interface{}{util.KVKey: util.KVValue},
 	)
@@ -79,8 +79,8 @@ func TestPopulateKV1Secret(test *testing.T) {
 	if secretMetadata == (Metadata{}) {
 		test.Error("the kv1 secret retrieval returned empty metadata")
 	}
-	if version != "0" {
-		test.Errorf("the kv1 secret put returned non-zero version: %s", version)
+	if secretMetadata.Version != "0" {
+		test.Errorf("the kv1 secret put returned non-zero version: %s", secretMetadata.Version)
 	}
 }
 
@@ -92,7 +92,7 @@ func TestPopulateKV2Secret(test *testing.T) {
 		test.Error(err)
 	}
 
-	version, secretMetadata, err := kv2VaultSecret.populateKV2Secret(
+	secretMetadata, err := kv2VaultSecret.populateKV2Secret(
 		util.VaultClient,
 		map[string]interface{}{util.KVKey: util.KVValue},
 		false,
@@ -104,10 +104,10 @@ func TestPopulateKV2Secret(test *testing.T) {
 	if secretMetadata == (Metadata{}) {
 		test.Error("the kv2 secret put returned empty metadata")
 	}
-	if version == "0" {
-		test.Errorf("the kv2 secret put returned an invalid version: %s", version)
+	if secretMetadata.Version == "0" {
+		test.Errorf("the kv2 secret put returned an invalid version: %s", secretMetadata.Version)
 	}
-	version, secretMetadata, err = kv2VaultSecret.populateKV2Secret(
+	secretMetadata, err = kv2VaultSecret.populateKV2Secret(
 		util.VaultClient,
 		map[string]interface{}{"other_password": "ultrasecret"},
 		true,
@@ -119,8 +119,8 @@ func TestPopulateKV2Secret(test *testing.T) {
 	if secretMetadata == (Metadata{}) {
 		test.Error("the kv2 secret patch returned empty metadata")
 	}
-	if version == "0" {
-		test.Errorf("the kv2 secret patch returned an invalid version: %s", version)
+	if secretMetadata.Version == "0" {
+		test.Errorf("the kv2 secret patch returned an invalid version: %s", secretMetadata.Version)
 	}
 }
 
@@ -133,7 +133,7 @@ func TestRawSecretToMetadata(test *testing.T) {
 	}
 
 	metadata := rawSecretToMetadata(rawSecret)
-	expectedMetadata := Metadata{LeaseID: rawSecret.LeaseID, LeaseDuration: "65535", Renewable: "false"}
+	expectedMetadata := Metadata{LeaseID: rawSecret.LeaseID, LeaseDuration: "65535", Renewable: "false", Version: "0"}
 
 	if metadata != expectedMetadata {
 		test.Error("the converted metadata returned unexpected values")

@@ -176,5 +176,6 @@ func rawSecretToMetadata(rawSecret *vault.Secret) Metadata {
 		LeaseID:       rawSecret.LeaseID,
 		LeaseDuration: strconv.Itoa(rawSecret.LeaseDuration),
 		Renewable:     strconv.FormatBool(rawSecret.Renewable),
+		Version:       "0", // default value to be overwritten later
 	}
 }
