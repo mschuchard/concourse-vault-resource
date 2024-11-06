@@ -11,7 +11,7 @@ import (
 )
 
 // generate credentials
-func (secret *vaultSecret) generateCredentials(client *vault.Client) (map[string]interface{}, string, Metadata, error) {
+func (secret *vaultSecret) generateCredentials(client *vault.Client) (map[string]interface{}, Metadata, error) {
 	// initialize api endpoint for cred generation
 	endpoint := secret.mount + "/creds/" + secret.path
 
@@ -20,18 +20,22 @@ func (secret *vaultSecret) generateCredentials(client *vault.Client) (map[string
 	if err != nil {
 		log.Printf("failed to generate credentials for %s with %s secrets engine", secret.path, secret.engine)
 		log.Print(err)
-		return map[string]interface{}{}, "0", Metadata{}, err
+		return map[string]interface{}{}, Metadata{}, err
 	}
 
 	// calculate the expiration time for version
 	expirationTime := time.Now().Local().Add(time.Second * time.Duration(response.LeaseDuration))
 
+	// initialize secret metadata and assign version
+	metadata := rawSecretToMetadata(response)
+	metadata.Version = expirationTime.String()
+
 	// return secret value implicitly coerced to map[string]interface{}, expiration time as version, and metadata
-	return response.Data, expirationTime.String(), rawSecretToMetadata(response), nil
+	return response.Data, metadata, nil
 }
 
 // retrieve key-value pair secrets
-func (secret *vaultSecret) retrieveKVSecret(client *vault.Client, version string) (map[string]interface{}, string, Metadata, error) {
+func (secret *vaultSecret) retrieveKVSecret(client *vault.Client, version string) (map[string]interface{}, Metadata, error) {
 	// declare error for return to cmd, and kvSecret for metadata.version and raw secret assignments and returns
 	var err error
 	var kvSecret *vault.KVSecret
@@ -63,7 +67,7 @@ func (secret *vaultSecret) retrieveKVSecret(client *vault.Client, version string
 			if err != nil {
 				log.Printf("KV2 version must be an integer, and %s was input instead", version)
 				// return empty values since error triggers at end of execution
-				return map[string]interface{}{}, "0", Metadata{}, err
+				return map[string]interface{}{}, Metadata{}, err
 			}
 
 			kvSecret, err = client.KVv2(secret.mount).GetVersion(
@@ -74,12 +78,12 @@ func (secret *vaultSecret) retrieveKVSecret(client *vault.Client, version string
 			if err != nil {
 				log.Printf("the KV2 secret at %s/%s could not be retrieved for version %d", secret.mount, secret.path, versionInt)
 				// return empty values since error triggers at end of execution
-				return map[string]interface{}{}, "0", Metadata{}, err
+				return map[string]interface{}{}, Metadata{}, err
 			}
 		}
 	default:
 		log.Printf("an invalid secret engine %s was selected", secret.engine)
-		return map[string]interface{}{}, "0", Metadata{}, errors.New("invalid secret engine")
+		return map[string]interface{}{}, Metadata{}, errors.New("invalid secret engine")
 	}
 
 	// verify secret read
@@ -87,19 +91,27 @@ func (secret *vaultSecret) retrieveKVSecret(client *vault.Client, version string
 		log.Printf("failed to read secret at mount %s and path %s from %s secrets engine", secret.mount, secret.path, secret.engine)
 		log.Print(err)
 		// return empty values since error triggers at end of execution
-		return map[string]interface{}{}, "0", Metadata{}, err
-	} else if kvSecret.Data == nil { // verify version exists
+		return map[string]interface{}{}, Metadata{}, err
+	}
+
+	// initialize secret metadata
+	metadata := rawSecretToMetadata(kvSecret.Raw)
+
+	if kvSecret.Data == nil { // verify version exists
 		log.Printf("the input version %s (0 signifies latest) does not exist for the secret at mount %s and path %s from %s secrets engine", version, secret.mount, secret.path, secret.engine)
+
 		// return partial information values since error triggers at end of execution
-		return map[string]interface{}{}, version, rawSecretToMetadata(kvSecret.Raw), err
+		metadata.Version = version
+		return map[string]interface{}{}, metadata, err
 	}
 
 	// return secret value and implicitly coerce type to map[string]interface{}
-	return kvSecret.Data, strconv.Itoa(kvSecret.VersionMetadata.Version), rawSecretToMetadata(kvSecret.Raw), nil
+	metadata.Version = strconv.Itoa(kvSecret.VersionMetadata.Version)
+	return kvSecret.Data, metadata, nil
 }
 
 // populate key-value v1 pair secrets
-func (secret *vaultSecret) populateKV1Secret(client *vault.Client, secretValue map[string]interface{}) (string, Metadata, error) {
+func (secret *vaultSecret) populateKV1Secret(client *vault.Client, secretValue map[string]interface{}) (Metadata, error) {
 	// put kv1 secret
 	err := client.KVv1(secret.mount).Put(
 		context.Background(),
@@ -110,15 +122,18 @@ func (secret *vaultSecret) populateKV1Secret(client *vault.Client, secretValue m
 	if err != nil {
 		log.Printf("failed to update secret %s into %s secrets Engine", secret.path, secret.engine)
 		log.Print(err)
-		return "0", Metadata{}, err
+		return Metadata{}, err
 	}
 
-	// return no error
-	return "0", rawSecretToMetadata(&vault.Secret{}), nil
+	// initialize secret metadata and assign dummy version
+	metadata := rawSecretToMetadata(&vault.Secret{})
+	metadata.Version = "0"
+
+	return metadata, nil
 }
 
 // populate key-value v2 pair secrets
-func (secret *vaultSecret) populateKV2Secret(client *vault.Client, secretValue map[string]interface{}, patch bool) (string, Metadata, error) {
+func (secret *vaultSecret) populateKV2Secret(client *vault.Client, secretValue map[string]interface{}, patch bool) (Metadata, error) {
 	// declare error and kvSecret for return to cmd
 	var err error
 	var kvSecret *vault.KVSecret
@@ -143,11 +158,15 @@ func (secret *vaultSecret) populateKV2Secret(client *vault.Client, secretValue m
 	if err != nil {
 		log.Printf("failed to update secret %s into %s secrets Engine", secret.path, secret.engine)
 		log.Print(err)
-		return "0", Metadata{}, err
+		return Metadata{}, err
 	}
 
+	// initialize secret metadata and assign version
+	metadata := rawSecretToMetadata(kvSecret.Raw)
+	metadata.Version = strconv.Itoa(kvSecret.VersionMetadata.Version)
+
 	// return no error
-	return strconv.Itoa(kvSecret.VersionMetadata.Version), rawSecretToMetadata(kvSecret.Raw), nil
+	return metadata, nil
 }
 
 // convert *vault.Secret raw secret to secret metadata

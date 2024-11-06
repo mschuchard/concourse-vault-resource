@@ -32,6 +32,7 @@ type Metadata struct {
 	LeaseID       string
 	LeaseDuration string
 	Renewable     string
+	Version       string
 }
 
 // secret defines a composite Vault secret configuration
@@ -111,7 +112,7 @@ func (secret *vaultSecret) Dynamic() bool {
 }
 
 // return secret value, version, metadata, and possible error (GET/READ/READ)
-func (secret *vaultSecret) SecretValue(client *vault.Client, version string) (map[string]interface{}, string, Metadata, error) {
+func (secret *vaultSecret) SecretValue(client *vault.Client, version string) (map[string]interface{}, Metadata, error) {
 	if secret.dynamic {
 		return secret.generateCredentials(client)
 	} else {
@@ -120,7 +121,7 @@ func (secret *vaultSecret) SecretValue(client *vault.Client, version string) (ma
 }
 
 // populate key-value pair secrets and return version, metadata, and error (PUT+POST/UPDATE+CREATE/PATCH+WRITE)
-func (secret *vaultSecret) PopulateKVSecret(client *vault.Client, secretValue map[string]interface{}, patch bool) (string, Metadata, error) {
+func (secret *vaultSecret) PopulateKVSecret(client *vault.Client, secretValue map[string]interface{}, patch bool) (Metadata, error) {
 	switch secret.engine {
 	case keyvalue1:
 		return secret.populateKV1Secret(client, secretValue)
@@ -128,16 +129,16 @@ func (secret *vaultSecret) PopulateKVSecret(client *vault.Client, secretValue ma
 		return secret.populateKV2Secret(client, secretValue, patch)
 	default:
 		log.Printf("an invalid secret engine %s was selected", secret.engine)
-		return "0", Metadata{}, errors.New("invalid secret engine")
+		return Metadata{}, errors.New("invalid secret engine")
 	}
 }
 
 // renew dynamic secret lease and return updated metadata
-func (secret *vaultSecret) Renew(client *vault.Client, leaseIdSuffix string) (string, Metadata, error) {
+func (secret *vaultSecret) Renew(client *vault.Client, leaseIdSuffix string) (Metadata, error) {
 	// semi-validate secret is renewable (better but not possible is *Secret.Renewable)
 	if !secret.dynamic {
 		log.Printf("the input secret with engine %s at mount %s and path %s is not renewable", secret.engine, secret.mount, secret.path)
-		return "0", Metadata{}, nil
+		return Metadata{}, nil
 	}
 
 	// determine full lease id
@@ -148,13 +149,17 @@ func (secret *vaultSecret) Renew(client *vault.Client, leaseIdSuffix string) (st
 	if err != nil {
 		log.Printf("the secret with lease ID %s could not be renewed", leaseId)
 		log.Print(err)
-		return "0", Metadata{}, err
+		return Metadata{}, err
 	}
 	log.Printf("the lease for %s was successfully renewed", leaseId)
 
 	// calculate the expiration time for version
 	expirationTime := time.Now().Local().Add(time.Second * time.Duration(rawSecret.LeaseDuration))
 
+	// initialize secret metadata and assign version
+	metadata := rawSecretToMetadata(rawSecret)
+	metadata.Version = expirationTime.String()
+
 	// convert raw secret to metadata and return metadata and version
-	return expirationTime.String(), rawSecretToMetadata(rawSecret), nil
+	return metadata, nil
 }

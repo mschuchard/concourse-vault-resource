@@ -6,7 +6,7 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/mschuchard/concourse-vault-resource/cmd"
+	helper "github.com/mschuchard/concourse-vault-resource/cmd"
 	"github.com/mschuchard/concourse-vault-resource/concourse"
 	"github.com/mschuchard/concourse-vault-resource/vault"
 )
@@ -52,7 +52,7 @@ func main() {
 	}
 
 	// retrieve version for secret
-	_, getVersion, _, err := secret.SecretValue(vaultClient, "")
+	_, secretMetadata, err := secret.SecretValue(vaultClient, "")
 	if err != nil {
 		log.Fatalf("version could not be retrieved for %s engine, %s mount, and path %s secret", secretSource.Engine, secretSource.Mount, secretSource.Path)
 	}
@@ -63,7 +63,7 @@ func main() {
 		log.Fatalf("the input version '%s' in source is not a valid integer", checkRequest.Version.Version)
 	}
 	versions := []concourse.Version{}
-	getVersionInt, err := strconv.Atoi(getVersion)
+	getVersionInt, err := strconv.Atoi(secretMetadata.Version)
 
 	// if getVersion could not be converted to int then this may be a dynamically generated credential
 	if err != nil {
@@ -73,15 +73,15 @@ func main() {
 			secret.Renew(vaultClient, secretSource.LeaseId)
 		} else {
 			// dummy a return for the versions using the original version return
-			versions = []concourse.Version{{Version: getVersion}}
+			versions = []concourse.Version{{Version: secretMetadata.Version}}
 		}
 	} else {
 		// validate that the input version is <= the latest retrieved version
 		if inputVersion > getVersionInt {
-			log.Printf("the input version %d is later than the retrieved version %s", inputVersion, getVersion)
+			log.Printf("the input version %d is later than the retrieved version %s", inputVersion, secretMetadata.Version)
 			log.Print("only the retrieved version will be returned to Concourse")
 
-			versions = []concourse.Version{{Version: getVersion}}
+			versions = []concourse.Version{{Version: secretMetadata.Version}}
 		} else {
 			// populate versions slice with delta
 			for versionDelta := inputVersion; versionDelta <= getVersionInt; versionDelta++ {

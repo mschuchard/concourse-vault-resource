@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/mschuchard/concourse-vault-resource/cmd"
+	helper "github.com/mschuchard/concourse-vault-resource/cmd"
 	"github.com/mschuchard/concourse-vault-resource/concourse"
 	"github.com/mschuchard/concourse-vault-resource/vault"
 )
@@ -49,7 +49,8 @@ func main() {
 			// declare identifier and rawSecret
 			identifier := mount + "-" + secretPath
 			// write the secret value to the path for the specified mount and engine
-			outResponse.Version[identifier], secretMetadata, nestedErr = secret.PopulateKVSecret(vaultClient, secretValue, secretParams.Patch)
+			secretMetadata, nestedErr = secret.PopulateKVSecret(vaultClient, secretValue, secretParams.Patch)
+			outResponse.Version[identifier] = secretMetadata.Version
 
 			if nestedErr != nil {
 				// join error into collection

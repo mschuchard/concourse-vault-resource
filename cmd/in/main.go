@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 
-	"github.com/mschuchard/concourse-vault-resource/cmd"
+	helper "github.com/mschuchard/concourse-vault-resource/cmd"
 	"github.com/mschuchard/concourse-vault-resource/concourse"
 	"github.com/mschuchard/concourse-vault-resource/vault"
 )
@@ -55,7 +55,8 @@ func main() {
 				identifier := mount + "-" + secretPath
 
 				// return and assign the secret values for the given path
-				secretValues[identifier], inResponse.Version[identifier], secretMetadata, nestedErr = secret.SecretValue(vaultClient, "")
+				secretValues[identifier], secretMetadata, nestedErr = secret.SecretValue(vaultClient, "")
+				inResponse.Version[identifier] = secretMetadata.Version
 				// join error into collection
 				err = errors.Join(err, nestedErr)
 				// convert rawSecret to concourse metadata and append to metadata
@@ -76,7 +77,8 @@ func main() {
 			// declare identifier and rawSecret
 			identifier := secretSource.Mount + "-" + secretSource.Path
 			// return and assign the secret values for the given path
-			secretValues[identifier], inResponse.Version[identifier], secretMetadata, nestedErr = secret.SecretValue(vaultClient, inRequest.Version.Version)
+			secretValues[identifier], secretMetadata, nestedErr = secret.SecretValue(vaultClient, inRequest.Version.Version)
+			inResponse.Version[identifier] = secretMetadata.Version
 
 			if nestedErr != nil {
 				// join error into collection
