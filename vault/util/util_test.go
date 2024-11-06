@@ -17,12 +17,15 @@ func TestBootstrap(test *testing.T) {
 
 	// enable auth: aws
 	VaultClient.Sys().EnableAuthWithOptions("auth/aws", &vault.EnableAuthOptions{Type: "aws"})
+
 	// enable secrets: database, aws, kv1 (kv2 enabled by default with dev server)
 	VaultClient.Sys().Mount("aws/", &vault.MountInput{Type: "aws"})
 	VaultClient.Sys().Mount("database/", &vault.MountInput{Type: "database"})
 	VaultClient.Sys().Mount(KV1Mount, &vault.MountInput{Type: "kv"})
+
 	// modify new kv secrets engine to be version 1
 	VaultClient.Sys().TuneMount(KV1Mount, vault.MountConfigInput{PluginVersion: "1"})
+
 	// put kv1 and kv2 secrets
 	VaultClient.KVv1(KV1Mount).Put(
 		context.Background(),

@@ -12,6 +12,7 @@ import (
 type secretEngine string
 
 const (
+	// dynamic credential generators
 	database   secretEngine = "database"
 	aws        secretEngine = "aws"
 	azure      secretEngine = "azure"
@@ -21,8 +22,9 @@ const (
 	rabbitmq   secretEngine = "rabbitmq"
 	ssh        secretEngine = "ssh"
 	terraform  secretEngine = "terraform"
-	keyvalue1  secretEngine = "kv1"
-	keyvalue2  secretEngine = "kv2"
+	// static secret storage
+	keyvalue1 secretEngine = "kv1"
+	keyvalue2 secretEngine = "kv2"
 )
 
 // secret metadata
@@ -62,43 +64,30 @@ func NewVaultSecret(engineString string, mount string, path string) (*vaultSecre
 		mount:  mount,
 	}
 
-	// determine if secret is dynamic
-	if engine == keyvalue1 || engine == keyvalue2 {
+	// determine if secret is dynamic and default mount point
+	// note current schema renders default mount setting pointless, but it would ensure safety to retain
+	switch engine {
+	case keyvalue1:
 		vaultSecret.dynamic = false
-	} else {
-		vaultSecret.dynamic = true
-	}
 
-	// determine default mount path if not specified
-	// note current schema renders this pointless, but it would ensure safety to retain
-	if len(mount) == 0 {
-		switch engine {
-		case database:
-			vaultSecret.mount = "database"
-		case aws:
-			vaultSecret.mount = "aws"
-		case azure:
-			vaultSecret.mount = "azure"
-		case consul:
-			vaultSecret.mount = "consul"
-		case kubernetes:
-			vaultSecret.mount = "kubernetes"
-		case nomad:
-			vaultSecret.mount = "nomad"
-		case rabbitmq:
-			vaultSecret.mount = "rabbitmq"
-		case ssh:
-			vaultSecret.mount = "ssh"
-		case terraform:
-			vaultSecret.mount = "terraform"
-		case keyvalue1:
+		if len(mount) == 0 {
 			vaultSecret.mount = "kv"
-		case keyvalue2:
-			vaultSecret.mount = "secret"
-		default:
-			log.Printf("an invalid secret engine %s was selected", engine)
-			return nil, errors.New("invalid secret engine")
 		}
+	case keyvalue2:
+		vaultSecret.dynamic = false
+
+		if len(mount) == 0 {
+			vaultSecret.mount = "secret"
+		}
+	case database, aws, azure, consul, kubernetes, nomad, rabbitmq, ssh, terraform:
+		vaultSecret.dynamic = true
+
+		if len(mount) == 0 {
+			vaultSecret.mount = string(engine)
+		}
+	default:
+		log.Printf("an invalid secret engine %s was selected", engine)
+		return nil, errors.New("invalid secret engine")
 	}
 
 	return vaultSecret, nil
