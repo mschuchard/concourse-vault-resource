@@ -53,6 +53,29 @@ func TestNewVaultConfig(test *testing.T) {
 		test.Errorf("expected vault config: %v", expectedVaultConfig)
 		test.Errorf("actual vault config: %v", *awsVaultConfig)
 	}
+
+	invalidServerConfig := VaultConfig{Address: "https//:foo.com"}
+	if err := invalidServerConfig.New(); err == nil || err.Error() != "invalid Vault server address" {
+		test.Error("invalid vault server address did not error as expected")
+	}
+
+	ambiguousAuth := VaultConfig{
+		Token:        util.VaultToken,
+		AWSMountPath: "gcp",
+	}
+	if err := ambiguousAuth.New(); err == nil || err.Error() != "unable to deduce authentication engine" {
+		test.Error("ambiguous unspecified authentication engine did not error as expected")
+	}
+
+	invalidAuth := VaultConfig{Engine: "does not exist"}
+	if err := invalidAuth.New(); err == nil || err.Error() != "invalid Vault authentication engine" {
+		test.Error("invalid authentication engine did not error as expected")
+	}
+
+	invalidToken := VaultConfig{Token: "foobarbaz"}
+	if err := invalidToken.New(); err == nil || err.Error() != "invalid vault token" {
+		test.Error("invalid vault token did not error as expected")
+	}
 }
 
 // test client token authentication
