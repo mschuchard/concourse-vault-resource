@@ -14,9 +14,9 @@ func TestNewVaultSecret(test *testing.T) {
 		test.Error(err)
 	}
 	expectedVaultSecret := vaultSecret{
-		engine: database,
-		mount: "database",
-		path: util.KVPath,
+		engine:  database,
+		mount:   "database",
+		path:    util.KVPath,
 		dynamic: true,
 	}
 
@@ -32,9 +32,9 @@ func TestNewVaultSecret(test *testing.T) {
 		test.Error(err)
 	}
 	expectedVaultSecret = vaultSecret{
-		engine: aws,
-		mount: "gcp",
-		path: util.KVPath,
+		engine:  aws,
+		mount:   "gcp",
+		path:    util.KVPath,
 		dynamic: true,
 	}
 
@@ -42,6 +42,14 @@ func TestNewVaultSecret(test *testing.T) {
 		test.Error("the aws vault secret constructor returned unexpected values")
 		test.Errorf("expected values: %v", expectedVaultSecret)
 		test.Errorf("actual values: %v", *awsVaultSecret)
+	}
+
+	if _, err = NewVaultSecret("", "", ""); err == nil || err.Error() != "required param(s) missing" {
+		test.Error("constructor did not return expected error for missing parameters")
+	}
+
+	if _, err = NewVaultSecret("foo", "bar", "baz"); err == nil || err.Error() != "invalid secret engine" {
+		test.Error("constructor did not return expected error for invalid secrets engine")
 	}
 }
 
