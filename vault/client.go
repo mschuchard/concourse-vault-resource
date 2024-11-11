@@ -70,11 +70,9 @@ func (config *VaultConfig) New() error {
 			log.Print("Token authentication will be utilized with the Vault client")
 			config.Engine = token
 		}
-	} else { // validate engine if unspecified
-		if config.Engine != awsIam && config.Engine != token {
-			log.Printf("%v was input as an authentication engine, but only token and aws are supported", config.Engine)
-			return errors.New("invalid Vault authentication engine")
-		}
+	} else if config.Engine != awsIam && config.Engine != token { // validate engine if unspecified
+		log.Printf("%v was input as an authentication engine, but only token and aws are supported", config.Engine)
+		return errors.New("invalid Vault authentication engine")
 	}
 
 	// validate vault token

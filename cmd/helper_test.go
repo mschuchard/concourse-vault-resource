@@ -17,11 +17,9 @@ func TestVaultClientFromSource(test *testing.T) {
 	if err != nil {
 		test.Error("failed to initialize vault client from concourse source")
 		test.Error(err)
-	} else {
-		if client.Token() != util.VaultToken {
-			test.Error("vault client configured with parameters from concourse source was not authenticated with expected token from source parameters")
-			test.Errorf("actual token: %s, expected token: %s", client.Token(), util.VaultToken)
-		}
+	} else if client.Token() != util.VaultToken {
+		test.Error("vault client configured with parameters from concourse source was not authenticated with expected token from source parameters")
+		test.Errorf("actual token: %s, expected token: %s", client.Token(), util.VaultToken)
 	}
 }
 
