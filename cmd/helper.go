@@ -14,21 +14,14 @@ import (
 // instantiates vault client from concourse source
 func VaultClientFromSource(source concourse.Source) (*vaultapi.Client, error) {
 	// initialize vault config and client
-	vaultConfig := &vault.VaultConfig{
-		Engine:       vault.AuthEngine(source.AuthEngine),
-		Address:      source.Address,
-		AWSMountPath: source.AWSMountPath,
-		AWSRole:      source.AWSVaultRole,
-		Token:        source.Token,
-		Insecure:     source.Insecure,
-	}
-	if err := vaultConfig.New(); err != nil {
+	vaultConfig, err := vault.NewVaultConfig(source)
+	if err != nil {
 		log.Print("error initializing Vault client config from Concourse source")
 		return nil, err
 	}
 
 	// transparently return client or error up the stack
-	return vaultConfig.AuthClient()
+	return vault.NewClient(vaultConfig)
 }
 
 // writes inResponse.Metadata marshalled to json to file at /opt/resource/vault.json

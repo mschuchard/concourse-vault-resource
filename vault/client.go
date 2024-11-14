@@ -8,6 +8,7 @@ import (
 
 	vault "github.com/hashicorp/vault/api"
 	auth "github.com/hashicorp/vault/api/auth/aws"
+	"github.com/mschuchard/concourse-vault-resource/concourse"
 )
 
 // authentication engine with pseudo-enum
@@ -29,74 +30,81 @@ type VaultConfig struct {
 }
 
 // VaultConfig constructor
-func (config *VaultConfig) New() error {
+func NewVaultConfig(source concourse.Source) (*VaultConfig, error) {
 	// vault address default
-	if len(config.Address) == 0 {
-		config.Address = "http://127.0.0.1:8200"
+	if len(source.Address) == 0 {
+		source.Address = "http://127.0.0.1:8200"
 	} else {
 		// vault address validation
-		if url, err := url.ParseRequestURI(config.Address); err != nil || len(url.Scheme) == 0 || len(url.Host) == 0 {
-			log.Printf("%s is not a valid Vault server address", config.Address)
+		if url, err := url.ParseRequestURI(source.Address); err != nil || len(url.Scheme) == 0 || len(url.Host) == 0 {
+			log.Printf("%s is not a valid Vault server address", source.Address)
 
 			// assign err if it is nil
 			if err == nil {
 				err = errors.New("invalid Vault server address")
 			}
 
-			return err
+			return nil, err
 		}
 	}
 
 	// insecure validation
-	if !config.Insecure && config.Address[0:5] == "http:" {
+	if !source.Insecure && source.Address[0:5] == "http:" {
 		log.Print("insecure input parameter was omitted or specified as false, and address protocol is http")
 		log.Print("insecure will be reset to value of true")
-		config.Insecure = true
+		source.Insecure = true
 	}
 
-	// determine engine if unspecified and validate authentication parameters
-	if len(config.Engine) == 0 {
-		log.Print("authentication engine for Vault not specified; using logic from other parameters to assist with determination")
+	authEngine := AuthEngine(source.AuthEngine)
+	if len(authEngine) == 0 {
+		log.Print("authentication engine for Vault not specified or otherwise unknown; using logic from other parameters to assist with determination")
 
-		if len(config.Token) > 0 && len(config.AWSMountPath) > 0 {
+		if len(source.Token) > 0 && len(source.AWSMountPath) > 0 {
 			log.Print("token and AWS mount path were simultaneously specified; these are mutually exclusive options")
 			log.Print("intended authentication engine could not be determined from other parameters")
-			return errors.New("unable to deduce authentication engine")
+			return nil, errors.New("unable to deduce authentication engine")
 		}
-		if len(config.Token) == 0 {
+		if len(source.Token) == 0 {
 			log.Print("AWS IAM authentication will be utilized with the Vault client")
-			config.Engine = awsIam
+			authEngine = awsIam
 		} else {
 			log.Print("Token authentication will be utilized with the Vault client")
-			config.Engine = token
+			authEngine = token
 		}
-	} else if config.Engine != awsIam && config.Engine != token { // validate engine if unspecified
-		log.Printf("%v was input as an authentication engine, but only token and aws are supported", config.Engine)
-		return errors.New("invalid Vault authentication engine")
+	} else if authEngine != awsIam && authEngine != token { // validate engine if unspecified
+		log.Printf("%v was input as an authentication engine, but only token and aws are supported", authEngine)
+		return nil, errors.New("invalid Vault authentication engine")
 	}
 
 	// validate vault token
-	if config.Engine == token && len(config.Token) != 28 {
+	if authEngine == token && len(source.Token) != 28 {
 		log.Print("the specified Vault Token is invalid")
-		return errors.New("invalid vault token")
+		return nil, errors.New("invalid vault token")
 	}
 
 	// default aws mount path and role
-	if config.Engine == awsIam {
-		if len(config.AWSMountPath) == 0 {
+	if authEngine == awsIam {
+		if len(source.AWSMountPath) == 0 {
 			log.Print("using default AWS authentication mount path at 'aws'")
-			config.AWSMountPath = "aws"
+			source.AWSMountPath = "aws"
 		}
-		if len(config.AWSRole) == 0 {
+		if len(source.AWSVaultRole) == 0 {
 			log.Print("using Vault role in utilized AWS authentication engine with the same name as the current utilized AWS IAM Role")
 		}
 	}
 
-	return nil
+	return &VaultConfig{
+		Engine:       authEngine,
+		Address:      source.Address,
+		AWSMountPath: source.AWSMountPath,
+		AWSRole:      source.AWSVaultRole,
+		Token:        source.Token,
+		Insecure:     source.Insecure,
+	}, nil
 }
 
 // instantiate authenticated vault client with aws-iam or token auth
-func (config *VaultConfig) AuthClient() (*vault.Client, error) {
+func NewClient(config *VaultConfig) (*vault.Client, error) {
 	// initialize config
 	vaultConfig := &vault.Config{Address: config.Address}
 	if err := vaultConfig.ConfigureTLS(&vault.TLSConfig{Insecure: config.Insecure}); err != nil {
