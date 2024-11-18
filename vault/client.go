@@ -19,18 +19,18 @@ const (
 	token  AuthEngine = "token"
 )
 
-// VaultConfig defines vault api interface config
-type VaultConfig struct {
-	Engine       AuthEngine
-	Address      string
-	AWSMountPath string
-	AWSRole      string
-	Token        string
-	Insecure     bool
+// vaultConfig defines vault api interface config
+type vaultConfig struct {
+	engine       AuthEngine
+	address      string
+	awsMountPath string
+	awsRole      string
+	token        string
+	insecure     bool
 }
 
 // VaultConfig constructor
-func NewVaultConfig(source concourse.Source) (*VaultConfig, error) {
+func NewVaultConfig(source concourse.Source) (*vaultConfig, error) {
 	// vault address default
 	if len(source.Address) == 0 {
 		source.Address = "http://127.0.0.1:8200"
@@ -93,21 +93,21 @@ func NewVaultConfig(source concourse.Source) (*VaultConfig, error) {
 		}
 	}
 
-	return &VaultConfig{
-		Engine:       authEngine,
-		Address:      source.Address,
-		AWSMountPath: source.AWSMountPath,
-		AWSRole:      source.AWSVaultRole,
-		Token:        source.Token,
-		Insecure:     source.Insecure,
+	return &vaultConfig{
+		engine:       authEngine,
+		address:      source.Address,
+		awsMountPath: source.AWSMountPath,
+		awsRole:      source.AWSVaultRole,
+		token:        source.Token,
+		insecure:     source.Insecure,
 	}, nil
 }
 
 // instantiate authenticated vault client with aws-iam or token auth
-func NewClient(config *VaultConfig) (*vault.Client, error) {
+func NewClient(config *vaultConfig) (*vault.Client, error) {
 	// initialize config
-	vaultConfig := &vault.Config{Address: config.Address}
-	if err := vaultConfig.ConfigureTLS(&vault.TLSConfig{Insecure: config.Insecure}); err != nil {
+	vaultConfig := &vault.Config{Address: config.address}
+	if err := vaultConfig.ConfigureTLS(&vault.TLSConfig{Insecure: config.insecure}); err != nil {
 		log.Print("Vault TLS configuration failed to initialize")
 		return nil, err
 	}
@@ -131,16 +131,16 @@ func NewClient(config *VaultConfig) (*vault.Client, error) {
 	}
 
 	// determine authentication method
-	switch config.Engine {
+	switch config.engine {
 	case token:
-		client.SetToken(config.Token)
+		client.SetToken(config.token)
 	case awsIam:
 		// determine iam role login option
 		var loginOption auth.LoginOption
 
-		if len(config.AWSRole) > 0 {
+		if len(config.awsRole) > 0 {
 			// use explicitly specified iam role
-			loginOption = auth.WithRole(config.AWSRole)
+			loginOption = auth.WithRole(config.awsRole)
 		} else {
 			// use default iam role
 			loginOption = auth.WithIAMAuth()

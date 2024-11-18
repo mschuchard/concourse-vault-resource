@@ -21,40 +21,40 @@ var (
 
 // test config constructor
 func TestNewVaultConfig(test *testing.T) {
-	vaultConfig, err := NewVaultConfig(basicSourceConfig)
+	basicVaultConfig, err := NewVaultConfig(basicSourceConfig)
 	if err != nil {
 		test.Error("the basic vault config did not successfully validate")
 		test.Error(err)
 	}
-	expectedVaultConfig := VaultConfig{
-		Address:  util.VaultAddress,
-		Engine:   token,
-		Token:    util.VaultToken,
-		Insecure: true,
+	expectedVaultConfig := vaultConfig{
+		address:  util.VaultAddress,
+		engine:   token,
+		token:    util.VaultToken,
+		insecure: true,
 	}
 
-	if *vaultConfig != expectedVaultConfig {
+	if *basicVaultConfig != expectedVaultConfig {
 		test.Error("the vault basic config constructor returned unexpected values.")
 		test.Errorf("expected vault config: %v", expectedVaultConfig)
-		test.Errorf("actual vault config: %v", *vaultConfig)
+		test.Errorf("actual vault config: %v", *basicVaultConfig)
 	}
 
-	vaultConfig, err = NewVaultConfig(awsSourceConfig)
+	basicVaultConfig, err = NewVaultConfig(awsSourceConfig)
 	if err != nil {
 		test.Error("the aws vault config did not successfully validate")
 		test.Error(err)
 	}
-	expectedVaultConfig = VaultConfig{
-		Address:      "https://192.168.9.10",
-		Engine:       awsIam,
-		AWSMountPath: "aws",
-		AWSRole:      "myIAMRole",
+	expectedVaultConfig = vaultConfig{
+		address:      "https://192.168.9.10",
+		engine:       awsIam,
+		awsMountPath: "aws",
+		awsRole:      "myIAMRole",
 	}
 
-	if *vaultConfig != expectedVaultConfig {
+	if *basicVaultConfig != expectedVaultConfig {
 		test.Error("the vault aws config constructor returned unexpected values.")
 		test.Errorf("expected vault config: %v", expectedVaultConfig)
-		test.Errorf("actual vault config: %v", *vaultConfig)
+		test.Errorf("actual vault config: %v", *basicVaultConfig)
 	}
 
 	invalidServerConfig := concourse.Source{Address: "https//:foo.com"}
