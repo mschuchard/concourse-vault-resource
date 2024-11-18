@@ -11,7 +11,7 @@ jobs:
     - checkout
     - run:
         name: install prereqs
-        command: apk add --no-cache --update build-base && mkdir -p /opt/resource
+        command: apk add --no-cache --update make && mkdir -p /opt/resource
     - run:
         name: build
         command: make build
