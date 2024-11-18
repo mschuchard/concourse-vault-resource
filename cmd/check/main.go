@@ -69,7 +69,7 @@ func main() {
 	if err != nil {
 		if secret.Dynamic() {
 			// this is a dynamically generated credential so renew it
-			log.Printf("the secret '%s' is dynamic and will be renewed", secret.Path())
+			log.Printf("the secret '%s' is dynamic and will be renewed", secretSource.Path)
 			secret.Renew(vaultClient, secretSource.LeaseId)
 		} else {
 			// dummy a return for the versions using the original version return

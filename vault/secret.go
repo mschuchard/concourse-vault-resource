@@ -27,14 +27,6 @@ const (
 	keyvalue2 secretEngine = "kv2"
 )
 
-// secret metadata
-type Metadata struct {
-	LeaseID       string
-	LeaseDuration string
-	Renewable     string
-	Version       string
-}
-
 // secret defines a composite Vault secret configuration
 type vaultSecret struct {
 	engine  secretEngine
@@ -95,18 +87,6 @@ func NewVaultSecret(engineString string, mount string, path string) (*vaultSecre
 }
 
 // secret readers
-func (secret *vaultSecret) Engine() secretEngine {
-	return secret.engine
-}
-
-func (secret *vaultSecret) Mount() string {
-	return secret.mount
-}
-
-func (secret *vaultSecret) Path() string {
-	return secret.path
-}
-
 func (secret *vaultSecret) Dynamic() bool {
 	return secret.dynamic
 }

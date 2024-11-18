@@ -10,6 +10,14 @@ import (
 	vault "github.com/hashicorp/vault/api"
 )
 
+// secret metadata
+type Metadata struct {
+	LeaseID       string
+	LeaseDuration string
+	Renewable     string
+	Version       string
+}
+
 // generate credentials
 func (secret *vaultSecret) generateCredentials(client *vault.Client) (map[string]interface{}, Metadata, error) {
 	// initialize api endpoint for cred generation
