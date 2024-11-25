@@ -45,21 +45,21 @@ func SecretsToJsonFile(filePath string, secretValues concourse.SecretValues) err
 // converts Vault secret metadata information to Concourse metadata
 func VaultToConcourseMetadata(prefix string, secretMetadata vault.Metadata) []concourse.MetadataEntry {
 	// initialize metadata entries for raw secret
-	var metadataEntries []concourse.MetadataEntry
+	metadataEntries := make([]concourse.MetadataEntry, 3)
 
-	// append lease id, lease duration, and renewable converted to string to the entries
-	metadataEntries = append(metadataEntries, concourse.MetadataEntry{
+	// assign lease id, lease duration, and renewable converted to string to the entries
+	metadataEntries[0] = concourse.MetadataEntry{
 		Name:  prefix + "-LeaseID",
 		Value: secretMetadata.LeaseID,
-	})
-	metadataEntries = append(metadataEntries, concourse.MetadataEntry{
+	}
+	metadataEntries[1] = concourse.MetadataEntry{
 		Name:  prefix + "-LeaseDuration",
 		Value: secretMetadata.LeaseDuration,
-	})
-	metadataEntries = append(metadataEntries, concourse.MetadataEntry{
+	}
+	metadataEntries[2] = concourse.MetadataEntry{
 		Name:  prefix + "-Renewable",
 		Value: secretMetadata.Renewable,
-	})
+	}
 
 	return metadataEntries
 }

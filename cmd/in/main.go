@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"os"
+	"slices"
 
 	helper "github.com/mschuchard/concourse-vault-resource/cmd"
 	"github.com/mschuchard/concourse-vault-resource/concourse"
@@ -59,8 +60,8 @@ func main() {
 				inResponse.Version[identifier] = secretMetadata.Version
 				// join error into collection
 				err = errors.Join(err, nestedErr)
-				// convert rawSecret to concourse metadata and append to metadata
-				inResponse.Metadata = append(inResponse.Metadata, helper.VaultToConcourseMetadata(identifier, secretMetadata)...)
+				// convert rawSecret to concourse metadata and concat with metadata
+				inResponse.Metadata = slices.Concat(inResponse.Metadata, helper.VaultToConcourseMetadata(identifier, secretMetadata))
 			}
 		}
 	} else { // read secret from source
@@ -84,8 +85,8 @@ func main() {
 				// join error into collection
 				err = errors.Join(err, nestedErr)
 			} else {
-				// convert rawSecret to concourse metadata and append to metadata
-				inResponse.Metadata = append(inResponse.Metadata, helper.VaultToConcourseMetadata(identifier, secretMetadata)...)
+				// convert rawSecret to concourse metadata and concat with metadata
+				inResponse.Metadata = slices.Concat(inResponse.Metadata, helper.VaultToConcourseMetadata(identifier, secretMetadata))
 			}
 		}
 	}

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"os"
+	"slices"
 
 	helper "github.com/mschuchard/concourse-vault-resource/cmd"
 	"github.com/mschuchard/concourse-vault-resource/concourse"
@@ -56,8 +57,8 @@ func main() {
 				// join error into collection
 				err = errors.Join(err, nestedErr)
 			} else {
-				// convert rawSecret to concourse metadata and append to metadata
-				outResponse.Metadata = append(outResponse.Metadata, helper.VaultToConcourseMetadata(identifier, secretMetadata)...)
+				// convert rawSecret to concourse metadata and concat with metadata
+				outResponse.Metadata = slices.Concat(outResponse.Metadata, helper.VaultToConcourseMetadata(identifier, secretMetadata))
 			}
 		}
 	}
