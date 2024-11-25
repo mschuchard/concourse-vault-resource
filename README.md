@@ -102,12 +102,21 @@ Examples:
 ---
 secret-foo/bar:
   password: supersecret
+  other_password: ultrasecret
+database-readonly:
+  username: my_user
+  password: my_password
 ```
 
 ```json
 {
   "secret-foo/bar": {
-    "password": "supersecret"
+    "password": "supersecret",
+    "other_password:" "ultrasecret"
+  },
+  "database-readonly": {
+    "username": "my_user",
+    "password": "my_password"
   }
 }
 ```
@@ -133,6 +142,18 @@ Although optimally `patch` would be specified per path, this would be cumbersome
 > Patch additively updates the most recent version of a key-value secret, differentiating it from Put which will fully overwrite the previous data. Only the key-value pairs that are new or changing need to be provided.
 
 The default value of `false` will trigger the `Put` behavior of overwriting/replacing all values at the specified secret path. **Note that the `patch` nested parameter only functions if the engine is kv2, and is ignored if the engine is kv1.**
+
+### Metadata
+
+Below is the general structure of the generated Concourse metadata.
+
+```json
+{
+  "<MOUNT>-<PATH>-LeaseID": "secret lease id",
+  "<MOUNT>-<PATH>-LeaseDuration": "secret lease duration",
+  "<MOUNT>-<PATH>-Renewable": "whether secret is renewable"
+}
+```
 
 ## Example
 
