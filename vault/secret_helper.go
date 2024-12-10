@@ -31,15 +31,36 @@ func (secret *vaultSecret) generateCredentials(client *vault.Client) (map[string
 		return map[string]interface{}{}, Metadata{}, err
 	}
 
-	// calculate the expiration time for version
-	expirationTime := time.Now().Local().Add(time.Second * time.Duration(response.LeaseDuration))
-
-	// initialize secret metadata and assign version
+	// initialize secret metadata
 	metadata := rawSecretToMetadata(response)
+
+	// calculate the expiration time for version and assign to metadata
+	expirationTime := time.Now().Local().Add(time.Second * time.Duration(response.LeaseDuration))
 	metadata.Version = expirationTime.String()
 
 	// return secret value implicitly coerced to map[string]interface{}, expiration time as version, and metadata
 	return response.Data, metadata, nil
+}
+
+// generate SSH credentials
+func (secret *vaultSecret) sshGenerateCredentials(client *vault.Client) (map[string]interface{}, Metadata, error) {
+	// generate credentials
+	sshSecret, err := client.SSHWithMountPoint(secret.mount).Credential(secret.path, map[string]interface{}{})
+	if err != nil {
+		log.Printf("failed to generate credentials for %s with ssh secrets engine", secret.path)
+		log.Print(err)
+		return map[string]interface{}{}, Metadata{}, err
+	}
+
+	// initialize secret metadata
+	metadata := rawSecretToMetadata(sshSecret)
+
+	// calculate the expiration time for version and assign to metadata
+	expirationTime := time.Now().Local().Add(time.Second * time.Duration(sshSecret.LeaseDuration))
+	metadata.Version = expirationTime.String()
+
+	// return secret value and implicitly coerce type to map[string]interface{}
+	return sshSecret.Data, metadata, nil
 }
 
 // retrieve key-value pair secrets

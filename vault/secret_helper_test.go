@@ -11,6 +11,9 @@ import (
 // test secret generate credential
 func TestGenerateCredentials(test *testing.T) {}
 
+// test secret ssh generate credential
+func TestSSHGenerateCredentials(test *testing.T) {}
+
 // test secret key value secret
 func TestRetrieveKVSecret(test *testing.T) {
 	kv1VaultSecret, err := NewVaultSecret("kv1", "", util.KVPath)
