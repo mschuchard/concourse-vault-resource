@@ -134,7 +134,7 @@ database-readonly:
       <key>: <value>
       <key>: <value>
   engine: <secret engine> # supported values: kv1, kv2
-  patch: <boolean> # default: false; also see below
+  patch: <boolean> # default: false; also see notes below
 ```
 
 Although optimally `patch` would be specified per path, this would be cumbersome in both implementation and usage, and therefore it is specified for all paths for a given `mount`. When `patch` is specified as `true`, then (from [Vault API PKG documentation](https://pkg.go.dev/github.com/hashicorp/vault/api#KVv2.Patch)):

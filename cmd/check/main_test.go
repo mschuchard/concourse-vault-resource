@@ -6,7 +6,7 @@ import (
 )
 
 func Example() {
-	// defer stdin close and establish workdir from argsp[1]
+	// defer stdin close and establish workdir from args[1]
 	defer os.Stdin.Close()
 
 	// deliver test pipeline file content as stdin to "in" the same as actual pipeline execution

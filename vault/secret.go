@@ -94,13 +94,17 @@ func (secret *vaultSecret) Dynamic() bool {
 // return secret value, version, metadata, and possible error (GET/READ/READ)
 func (secret *vaultSecret) SecretValue(client *vault.Client, version string) (map[string]interface{}, Metadata, error) {
 	if secret.dynamic {
-		return secret.generateCredentials(client)
+		if secret.engine == ssh {
+			return secret.sshGenerateCredentials(client)
+		} else {
+			return secret.generateCredentials(client)
+		}
 	} else {
 		return secret.retrieveKVSecret(client, version)
 	}
 }
 
-// populate key-value pair secrets and return version, metadata, and error (PUT+POST/UPDATE+CREATE/PATCH+WRITE)
+// populate key-value pair secrets and return version, metadata, and error (POST/WRITE/CREATE+PUT/PATCH/UPDATE)
 func (secret *vaultSecret) PopulateKVSecret(client *vault.Client, secretValue map[string]interface{}, patch bool) (Metadata, error) {
 	switch secret.engine {
 	case keyvalue1:

@@ -1,4 +1,5 @@
 ### 1.2.1 (Next)
+- Various code optimization and improvements.
 
 ### 1.2.0
 - Remove `renew` parameter from in/get step.
