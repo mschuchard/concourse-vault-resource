@@ -1,4 +1,4 @@
-### 1.2.1 (Next)
+### 1.2.1
 - Various code optimization and improvements.
 
 ### 1.2.0
