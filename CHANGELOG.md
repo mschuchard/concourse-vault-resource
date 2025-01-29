@@ -1,3 +1,6 @@
+### 1.2.2 (Next)
+- Improve expiration time format in metadata version.
+
 ### 1.2.1
 - Various code optimization and improvements.
 

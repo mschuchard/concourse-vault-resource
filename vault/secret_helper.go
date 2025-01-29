@@ -36,7 +36,7 @@ func (secret *vaultSecret) generateCredentials(client *vault.Client) (map[string
 
 	// calculate the expiration time for version and assign to metadata
 	expirationTime := time.Now().Local().Add(time.Second * time.Duration(response.LeaseDuration))
-	metadata.Version = expirationTime.String()
+	metadata.Version = expirationTime.Format("2006-01-02-150405")
 
 	// return secret value implicitly coerced to map[string]interface{}, expiration time as version, and metadata
 	return response.Data, metadata, nil
@@ -57,7 +57,7 @@ func (secret *vaultSecret) sshGenerateCredentials(client *vault.Client) (map[str
 
 	// calculate the expiration time for version and assign to metadata
 	expirationTime := time.Now().Local().Add(time.Second * time.Duration(sshSecret.LeaseDuration))
-	metadata.Version = expirationTime.String()
+	metadata.Version = expirationTime.Format("2006-01-02-150405")
 
 	// return secret value and implicitly coerce type to map[string]interface{}
 	return sshSecret.Data, metadata, nil
