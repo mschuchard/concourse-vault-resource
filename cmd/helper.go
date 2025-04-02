@@ -13,15 +13,13 @@ import (
 
 // instantiates vault client from concourse source
 func VaultClientFromSource(source concourse.Source) (*vaultapi.Client, error) {
-	// initialize vault config and client
-	vaultConfig, err := vault.NewVaultConfig(source)
+	// initialize vault client from source
+	vaultClient, err := vault.NewVaultClient(source)
 	if err != nil {
-		log.Print("error initializing Vault client config from Concourse source")
-		return nil, err
+		log.Print("error initializing Vault client from Concourse source")
 	}
 
-	// transparently return client or error up the stack
-	return vault.NewClient(vaultConfig)
+	return vaultClient, err
 }
 
 // writes inResponse.Metadata marshalled to json to file at /opt/resource/vault.json
