@@ -3,6 +3,7 @@ package enum
 import (
 	"errors"
 	"log"
+	"slices"
 )
 
 // authentication engine with pseudo-enum
@@ -40,3 +41,12 @@ const (
 	KeyValue1 SecretEngine = "kv1"
 	KeyValue2 SecretEngine = "kv2"
 )
+
+// secretengine type conversion
+func (s SecretEngine) New() (SecretEngine, error) {
+	if !slices.Contains([]SecretEngine{Database, AWS, Azure, Consul, Kubernetes, Nomad, RabbitMQ, SSH, Terraform, KeyValue1, KeyValue2}, s) {
+		log.Printf("string %s could not be converted to SecretEngine enum", s)
+		return "", errors.New("invalid secretengine enum")
+	}
+	return s, nil
+}
