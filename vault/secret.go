@@ -26,10 +26,9 @@ func NewVaultSecret(engineString string, mount string, path string) (*vaultSecre
 	}
 
 	// validate engine parameter
-	engine := enum.SecretEngine(engineString)
-	if len(engine) == 0 {
-		log.Printf("an invalid secrets engine was specified: %s", engineString)
-		return nil, errors.New("invalid secret engine")
+	engine, err := enum.SecretEngine(engineString).New()
+	if err != nil {
+		return nil, err
 	}
 
 	// initialize vault secret

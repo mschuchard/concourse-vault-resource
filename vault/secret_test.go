@@ -49,7 +49,7 @@ func TestNewVaultSecret(test *testing.T) {
 		test.Error("constructor did not return expected error for missing parameters")
 	}
 
-	if _, err = NewVaultSecret("foo", "bar", "baz"); err == nil || err.Error() != "invalid secret engine" {
+	if _, err = NewVaultSecret("foo", "bar", "baz"); err == nil || err.Error() != "invalid secretengine enum" {
 		test.Error("constructor did not return expected error for invalid secrets engine")
 	}
 }
