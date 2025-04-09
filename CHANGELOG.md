@@ -1,5 +1,6 @@
 ### 1.2.2 (Next)
 - Improve expiration time format in metadata version.
+- Properly utilize `aws_mount_path` `source` parameter.
 
 ### 1.2.1
 - Various code optimization and improvements.

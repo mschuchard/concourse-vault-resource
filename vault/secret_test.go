@@ -3,6 +3,7 @@ package vault
 import (
 	"testing"
 
+	"github.com/mschuchard/concourse-vault-resource/enum"
 	"github.com/mschuchard/concourse-vault-resource/vault/util"
 )
 
@@ -14,7 +15,7 @@ func TestNewVaultSecret(test *testing.T) {
 		test.Error(err)
 	}
 	expectedVaultSecret := vaultSecret{
-		engine:  database,
+		engine:  enum.Database,
 		mount:   "database",
 		path:    util.KVPath,
 		dynamic: true,
@@ -32,7 +33,7 @@ func TestNewVaultSecret(test *testing.T) {
 		test.Error(err)
 	}
 	expectedVaultSecret = vaultSecret{
-		engine:  aws,
+		engine:  enum.AWS,
 		mount:   "gcp",
 		path:    util.KVPath,
 		dynamic: true,

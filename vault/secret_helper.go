@@ -8,6 +8,7 @@ import (
 	"time"
 
 	vault "github.com/hashicorp/vault/api"
+	"github.com/mschuchard/concourse-vault-resource/enum"
 )
 
 // secret metadata
@@ -70,7 +71,7 @@ func (secret *vaultSecret) retrieveKVSecret(client *vault.Client, version string
 	var kvSecret *vault.KVSecret
 
 	switch secret.engine {
-	case keyvalue1:
+	case enum.KeyValue1:
 		if len(version) > 0 {
 			log.Print("versions cannot be used with the KV1 secrets engine")
 		}
@@ -83,7 +84,7 @@ func (secret *vaultSecret) retrieveKVSecret(client *vault.Client, version string
 		if err == nil && kvSecret != nil {
 			kvSecret.VersionMetadata = &vault.KVVersionMetadata{Version: 0}
 		}
-	case keyvalue2:
+	case enum.KeyValue2:
 		// read latest kv2 secret
 		if len(version) == 0 {
 			kvSecret, err = client.KVv2(secret.mount).Get(

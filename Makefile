@@ -29,7 +29,7 @@ shutdown:
 	@killall vault
 
 unit:
-	@go test -v ./cmd ./concourse ./vault/...
+	@go test -v ./cmd ./concourse ./enum ./vault/...
 
 accept:
 	@go test -v ./cmd/check ./cmd/in ./cmd/out

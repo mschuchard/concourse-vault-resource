@@ -6,30 +6,12 @@ import (
 	"time"
 
 	vault "github.com/hashicorp/vault/api"
-)
-
-// secret engine with pseudo-enum
-type secretEngine string
-
-const (
-	// dynamic credential generators
-	database   secretEngine = "database"
-	aws        secretEngine = "aws"
-	azure      secretEngine = "azure"
-	consul     secretEngine = "consul"
-	kubernetes secretEngine = "kubernetes"
-	nomad      secretEngine = "nomad"
-	rabbitmq   secretEngine = "rabbitmq"
-	ssh        secretEngine = "ssh"
-	terraform  secretEngine = "terraform"
-	// static secret storage
-	keyvalue1 secretEngine = "kv1"
-	keyvalue2 secretEngine = "kv2"
+	"github.com/mschuchard/concourse-vault-resource/enum"
 )
 
 // secret defines a composite Vault secret configuration
 type vaultSecret struct {
-	engine  secretEngine
+	engine  enum.SecretEngine
 	mount   string
 	path    string
 	dynamic bool
@@ -44,7 +26,7 @@ func NewVaultSecret(engineString string, mount string, path string) (*vaultSecre
 	}
 
 	// validate engine parameter
-	engine := secretEngine(engineString)
+	engine := enum.SecretEngine(engineString)
 	if len(engine) == 0 {
 		log.Printf("an invalid secrets engine was specified: %s", engineString)
 		return nil, errors.New("invalid secret engine")
@@ -60,19 +42,19 @@ func NewVaultSecret(engineString string, mount string, path string) (*vaultSecre
 	// determine if secret is dynamic and default mount point
 	// note current schema renders default mount setting pointless, but it would ensure safety to retain
 	switch engine {
-	case keyvalue1:
+	case enum.KeyValue1:
 		vaultSecret.dynamic = false
 
 		if len(mount) == 0 {
 			vaultSecret.mount = "kv"
 		}
-	case keyvalue2:
+	case enum.KeyValue2:
 		vaultSecret.dynamic = false
 
 		if len(mount) == 0 {
 			vaultSecret.mount = "secret"
 		}
-	case database, aws, azure, consul, kubernetes, nomad, rabbitmq, ssh, terraform:
+	case enum.Database, enum.AWS, enum.Azure, enum.Consul, enum.Kubernetes, enum.Nomad, enum.RabbitMQ, enum.SSH, enum.Terraform:
 		vaultSecret.dynamic = true
 
 		if len(mount) == 0 {
@@ -94,7 +76,7 @@ func (secret *vaultSecret) Dynamic() bool {
 // return secret value, version, metadata, and possible error (GET/READ/READ)
 func (secret *vaultSecret) SecretValue(client *vault.Client, version string) (map[string]interface{}, Metadata, error) {
 	if secret.dynamic {
-		if secret.engine == ssh {
+		if secret.engine == enum.SSH {
 			return secret.sshGenerateCredentials(client)
 		} else {
 			return secret.generateCredentials(client)
@@ -107,9 +89,9 @@ func (secret *vaultSecret) SecretValue(client *vault.Client, version string) (ma
 // populate key-value pair secrets and return version, metadata, and error (POST/WRITE/CREATE+PUT/PATCH/UPDATE)
 func (secret *vaultSecret) PopulateKVSecret(client *vault.Client, secretValue map[string]interface{}, patch bool) (Metadata, error) {
 	switch secret.engine {
-	case keyvalue1:
+	case enum.KeyValue1:
 		return secret.populateKV1Secret(client, secretValue)
-	case keyvalue2:
+	case enum.KeyValue2:
 		return secret.populateKV2Secret(client, secretValue, patch)
 	default:
 		log.Printf("an invalid secret engine %s was selected", secret.engine)

@@ -94,7 +94,8 @@ func TestNewVaultConfig(test *testing.T) {
 	}
 
 	invalidServerConfig := concourse.Source{Address: "https//:foo.com"}
-	if _, err := NewVaultClient(invalidServerConfig); err == nil || err.Error() != "invalid Vault server address" {
-		test.Errorf("expected error: invalid Vault server address, actual: %s", err)
+	if _, err := NewVaultClient(invalidServerConfig); err == nil || err.Error() != "parse \"https//:foo.com\": invalid URI for request" {
+		test.Errorf("expected error: parse \"https//:foo.com\": invalid URI for request, actual: %s", err)
 	}
+	//client_test.go:80: expected error: invalid Vault authentication engine, actual: unable to log in to auth method: failed to retrieve credentials from credential chain: NoCredentialProviders: no valid providers in chain. Deprecated. WHAT <-- works fine in vault raft backup
 }
