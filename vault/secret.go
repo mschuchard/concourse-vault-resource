@@ -103,7 +103,7 @@ func (secret *vaultSecret) Renew(client *vault.Client, leaseIdSuffix string) (Me
 	// semi-validate secret is renewable (better but not possible is *Secret.Renewable)
 	if !secret.dynamic {
 		log.Printf("the input secret with engine %s at mount %s and path %s is not renewable", secret.engine, secret.mount, secret.path)
-		return Metadata{}, nil
+		return Metadata{}, errors.New("non-renewable secret")
 	}
 
 	// determine full lease id
