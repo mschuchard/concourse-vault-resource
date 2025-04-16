@@ -6,7 +6,6 @@ import (
 	"os"
 	"strconv"
 
-	helper "github.com/mschuchard/concourse-vault-resource/cmd"
 	"github.com/mschuchard/concourse-vault-resource/concourse"
 	"github.com/mschuchard/concourse-vault-resource/vault"
 )
@@ -38,7 +37,7 @@ func main() {
 	}
 
 	// initialize vault client from concourse source
-	vaultClient, err := helper.VaultClientFromSource(checkRequest.Source)
+	vaultClient, err := vault.NewVaultClient(checkRequest.Source)
 	if err != nil {
 		log.Print("vault client failed to initialize during check")
 		log.Fatal(err)

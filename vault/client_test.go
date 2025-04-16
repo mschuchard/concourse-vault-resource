@@ -74,10 +74,10 @@ func TestNewVaultConfig(test *testing.T) {
 		test.Errorf("expected error (contains): NoCredentialProviders: no valid providers in chain, actual: %v", err)
 	}
 
-	// test errors in reverse validation order
+	// test errors
 	invalidAuth := concourse.Source{AuthEngine: "does not exist"}
-	if _, err := NewVaultClient(invalidAuth); err == nil || err.Error() != "invalid Vault authentication engine" {
-		test.Errorf("expected error: invalid Vault authentication engine, actual: %s", err)
+	if _, err := NewVaultClient(invalidAuth); err == nil || err.Error() != "invalid authengine enum" {
+		test.Errorf("expected error: invalid authengine enum, actual: %s", err)
 	}
 
 	invalidToken := concourse.Source{Token: "foobarbaz"}
@@ -97,5 +97,4 @@ func TestNewVaultConfig(test *testing.T) {
 	if _, err := NewVaultClient(invalidServerConfig); err == nil || err.Error() != "parse \"https//:foo.com\": invalid URI for request" {
 		test.Errorf("expected error: parse \"https//:foo.com\": invalid URI for request, actual: %s", err)
 	}
-	//client_test.go:80: expected error: invalid Vault authentication engine, actual: unable to log in to auth method: failed to retrieve credentials from credential chain: NoCredentialProviders: no valid providers in chain. Deprecated. WHAT <-- works fine in vault raft backup
 }

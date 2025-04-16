@@ -5,22 +5,9 @@ import (
 	"log"
 	"os"
 
-	vaultapi "github.com/hashicorp/vault/api"
-
 	"github.com/mschuchard/concourse-vault-resource/concourse"
 	"github.com/mschuchard/concourse-vault-resource/vault"
 )
-
-// instantiates vault client from concourse source
-func VaultClientFromSource(source concourse.Source) (*vaultapi.Client, error) {
-	// initialize vault client from source
-	vaultClient, err := vault.NewVaultClient(source)
-	if err != nil {
-		log.Print("error initializing Vault client from Concourse source")
-	}
-
-	return vaultClient, err
-}
 
 // writes inResponse.Metadata marshalled to json to file at /opt/resource/vault.json
 func SecretsToJsonFile(filePath string, secretValues concourse.SecretValues) error {

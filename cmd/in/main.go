@@ -22,7 +22,7 @@ func main() {
 	}
 	inResponse := concourse.NewResponse()
 	// initialize vault client from concourse source
-	vaultClient, err := helper.VaultClientFromSource(inRequest.Source)
+	vaultClient, err := vault.NewVaultClient(inRequest.Source)
 	if err != nil {
 		log.Print("vault client failed to initialize during in/get")
 		log.Fatal(err)
