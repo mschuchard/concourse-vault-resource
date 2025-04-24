@@ -19,8 +19,8 @@ var (
 	}
 )
 
-// test config constructor
-func TestNewVaultConfig(test *testing.T) {
+// test client constructor
+func TestNewVaultClient(test *testing.T) {
 	/*basicVaultConfig, err := NewVaultConfig(basicSourceConfig)
 	if err != nil {
 		test.Error("the basic vault config did not successfully validate")

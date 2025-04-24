@@ -70,7 +70,7 @@ func NewVaultClient(source concourse.Source) (*vault.Client, error) {
 	engine, err := enum.AuthEngine(source.AuthEngine).New()
 
 	// determine vault auth engine if unspecified
-	if len(engine) == 0 {
+	if len(source.AuthEngine) == 0 {
 		log.Print("authentication engine for Vault not specified, or specified but unsupported")
 		log.Print("using logic from other input parameters to assist with determination")
 
