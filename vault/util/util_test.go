@@ -35,7 +35,7 @@ func TestBootstrap(test *testing.T) {
 	VaultClient.KVv2(KV2Mount).Put(
 		context.Background(),
 		KVPath,
-		map[string]interface{}{KVKey: KVValue},
+		map[string]interface{}{KVKey: KVValue, "other_password": "ultrasecret"},
 	)
 	// for full "in" test
 	VaultClient.KVv2(KV2Mount).Put(
