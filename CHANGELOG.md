@@ -1,4 +1,4 @@
-### 1.2.2 (Next)
+### 1.2.2
 - Improve expiration time format in metadata version.
 - Properly utilize `aws_mount_path` `source` parameter.
 - Improve Vault client initialization efficiency.
