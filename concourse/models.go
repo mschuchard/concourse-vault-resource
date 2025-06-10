@@ -8,49 +8,15 @@ import (
 	"regexp"
 )
 
-// custom type structs supporting concourse structs
-type SecretSource struct {
-	Engine  string `json:"engine"`
-	Mount   string `json:"mount"`
-	Path    string `json:"path"`
-	LeaseId string `json:"lease_id"`
+// custom type structs supporting concourse models for input and outputs
+// check/source/version
+type checkRequest struct {
+	Source  Source  `json:"source"`
+	Version Version `json:"version"`
 }
 
-type secrets struct {
-	Engine string   `json:"engine"`
-	Paths  []string `json:"paths"`
-}
+type checkResponse []Version
 
-// key-value pairs would be arbitrary for kv1 and kv2, but are standardized schema for credential generators
-type secretValue map[string]interface{}
-
-// key is secret "<mount>-<path>", and value is secret keys and values
-type SecretValues map[string]secretValue
-
-type secretsPut struct {
-	Engine string `json:"engine"`
-	Patch  bool   `json:"patch"`
-	// key is secret path
-	Secrets SecretValues `json:"secrets"`
-}
-
-type dbSecretValue struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-type awsSecretValue struct {
-	AccessKey    string `json:"access_key"`
-	SecretKey    string `json:"secret_key"`
-	SessionToken string `json:"session_token"`
-	ARN          string `json:"arn,omitempty"`
-}
-type azureSecretValue struct {
-	ClientID     string `json:"client_id"`
-	ClientSecret string `json:"client_secret"`
-}
-type kvSecretValue map[string]interface{}
-
-// concourse standard type structs
 type Source struct {
 	AuthEngine   string       `json:"auth_engine,omitempty"`
 	Address      string       `json:"address,omitempty"`
@@ -61,8 +27,33 @@ type Source struct {
 	Secret       SecretSource `json:"secret"`
 }
 
+type SecretSource struct {
+	Engine  string `json:"engine"`
+	Mount   string `json:"mount"`
+	Path    string `json:"path"`
+	LeaseId string `json:"lease_id"`
+}
+
 type Version struct {
 	Version string `json:"version"`
+}
+
+// in/get
+type inRequest struct {
+	// key is secret mount
+	Params  map[string]secrets `json:"params"`
+	Source  Source             `json:"source"`
+	Version Version            `json:"version"`
+}
+
+type secrets struct {
+	Engine string   `json:"engine"`
+	Paths  []string `json:"paths"`
+}
+
+type response struct {
+	Metadata []MetadataEntry `json:"metadata"`
+	Version  responseVersion `json:"version"`
 }
 
 type MetadataEntry struct {
@@ -72,31 +63,22 @@ type MetadataEntry struct {
 
 type responseVersion map[string]string // key is "<mount>-<path>" and value is version of secret
 
-// check/in/out custom type structs for inputs and outputs
-type checkRequest struct {
-	Source  Source  `json:"source"`
-	Version Version `json:"version"`
-}
-
-type checkResponse []Version
-
-type inRequest struct {
-	// key is secret mount
-	Params  map[string]secrets `json:"params"`
-	Source  Source             `json:"source"`
-	Version Version            `json:"version"`
-}
-
+// out/put (response same as in/get)
 type outRequest struct {
-	// key is secret mount
-	Params map[string]secretsPut `json:"params"`
+	Params map[string]secretsPut `json:"params"` // key is secret mount
 	Source Source                `json:"source"`
 }
 
-type response struct {
-	Metadata []MetadataEntry `json:"metadata"`
-	Version  responseVersion `json:"version"`
+type secretsPut struct {
+	Engine string `json:"engine"`
+	Patch  bool   `json:"patch"`
+	// key is secret path
+	Secrets SecretValues `json:"secrets"`
 }
+
+type SecretValues map[string]secretValue // key is secret "<mount>-<path>", and value is secret keys and values
+
+type secretValue map[string]any // key-value pairs would be arbitrary for kv1 and kv2, but are standardized schema for credential generators
 
 // inRequest constructor with pipeline param as io.Reader but typically os.Stdin *os.File input because concourse
 func NewCheckRequest(pipelineJSON io.Reader) (*checkRequest, error) {
