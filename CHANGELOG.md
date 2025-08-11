@@ -1,6 +1,7 @@
 ### 1.2.3 (Next)
 - Improve metadata formatting.
-- Improve credential generation.
+- Improve credential generation and expiratiom time calculation.
+- Validate raw secret before metadata conversion.
 
 ### 1.2.2
 - Improve expiration time format in metadata version.

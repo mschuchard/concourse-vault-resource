@@ -44,7 +44,7 @@ func (secret *vaultSecret) generateCredentials(client *vault.Client) (map[string
 	}
 
 	// calculate the expiration time for version and assign to metadata
-	expirationTime := time.Now().Local().Add(time.Second * time.Duration(rawSecret.LeaseDuration))
+	expirationTime := time.Now().Local().Add(metadata.LeaseDuration)
 	metadata.Version = expirationTime.Format("2006-01-02-150405")
 
 	// return secret value implicitly coerced to map[string]any, expiration time as version, and metadata
@@ -198,7 +198,7 @@ func (secret *vaultSecret) populateKV2Secret(client *vault.Client, secretValue m
 	return metadata, nil
 }
 
-// convert *vault.Secret raw secret to secret metadata // TODO: seems like I convert raw secret lease duration to time.Duration multiple places
+// convert *vault.Secret raw secret to secret metadata
 func rawSecretToMetadata(rawSecret *vault.Secret) (Metadata, error) {
 	if rawSecret == nil {
 		log.Print("the raw secret is nil, and metadata cannot be constructed from it")
