@@ -2,6 +2,7 @@ package vault
 
 import (
 	"testing"
+	"time"
 
 	vault "github.com/hashicorp/vault/api"
 
@@ -135,8 +136,9 @@ func TestRawSecretToMetadata(test *testing.T) {
 		Renewable:     false,
 	}
 
+	duration, _ := time.ParseDuration("65535s")
 	metadata := rawSecretToMetadata(rawSecret)
-	expectedMetadata := Metadata{LeaseID: rawSecret.LeaseID, LeaseDuration: "65535", Renewable: "false", Version: "0"}
+	expectedMetadata := Metadata{LeaseID: rawSecret.LeaseID, LeaseDuration: duration, Renewable: "false", Version: "0"}
 
 	if metadata != expectedMetadata {
 		test.Error("the converted metadata returned unexpected values")

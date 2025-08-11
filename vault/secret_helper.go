@@ -14,13 +14,13 @@ import (
 // secret metadata
 type Metadata struct {
 	LeaseID       string
-	LeaseDuration string
+	LeaseDuration time.Duration
 	Renewable     string
 	Version       string
 }
 
 // generate credentials
-func (secret *vaultSecret) generateCredentials(client *vault.Client) (map[string]interface{}, Metadata, error) {
+func (secret *vaultSecret) generateCredentials(client *vault.Client) (map[string]any, Metadata, error) {
 	// initialize api endpoint for cred generation
 	endpoint := secret.mount + "/creds/" + secret.path
 
@@ -29,7 +29,7 @@ func (secret *vaultSecret) generateCredentials(client *vault.Client) (map[string
 	if err != nil {
 		log.Printf("failed to generate credentials for %s with %s secrets engine", secret.path, secret.engine)
 		log.Print(err)
-		return map[string]interface{}{}, Metadata{}, err
+		return map[string]any{}, Metadata{}, err
 	}
 
 	// initialize secret metadata
@@ -39,18 +39,18 @@ func (secret *vaultSecret) generateCredentials(client *vault.Client) (map[string
 	expirationTime := time.Now().Local().Add(time.Second * time.Duration(response.LeaseDuration))
 	metadata.Version = expirationTime.Format("2006-01-02-150405")
 
-	// return secret value implicitly coerced to map[string]interface{}, expiration time as version, and metadata
+	// return secret value implicitly coerced to map[string]any, expiration time as version, and metadata
 	return response.Data, metadata, nil
 }
 
 // generate SSH credentials
-func (secret *vaultSecret) sshGenerateCredentials(client *vault.Client) (map[string]interface{}, Metadata, error) {
+func (secret *vaultSecret) sshGenerateCredentials(client *vault.Client) (map[string]any, Metadata, error) {
 	// generate credentials
-	sshSecret, err := client.SSHWithMountPoint(secret.mount).Credential(secret.path, map[string]interface{}{})
+	sshSecret, err := client.SSHWithMountPoint(secret.mount).Credential(secret.path, map[string]any{})
 	if err != nil {
 		log.Printf("failed to generate credentials for %s with ssh secrets engine", secret.path)
 		log.Print(err)
-		return map[string]interface{}{}, Metadata{}, err
+		return map[string]any{}, Metadata{}, err
 	}
 
 	// initialize secret metadata
@@ -60,12 +60,12 @@ func (secret *vaultSecret) sshGenerateCredentials(client *vault.Client) (map[str
 	expirationTime := time.Now().Local().Add(time.Second * time.Duration(sshSecret.LeaseDuration))
 	metadata.Version = expirationTime.Format("2006-01-02-150405")
 
-	// return secret value and implicitly coerce type to map[string]interface{}
+	// return secret value and implicitly coerce type to map[string]any
 	return sshSecret.Data, metadata, nil
 }
 
 // retrieve key-value pair secrets
-func (secret *vaultSecret) retrieveKVSecret(client *vault.Client, version string) (map[string]interface{}, Metadata, error) {
+func (secret *vaultSecret) retrieveKVSecret(client *vault.Client, version string) (map[string]any, Metadata, error) {
 	// declare error for return to cmd, and kvSecret for metadata.version and raw secret assignments and returns
 	var err error
 	var kvSecret *vault.KVSecret
@@ -73,7 +73,7 @@ func (secret *vaultSecret) retrieveKVSecret(client *vault.Client, version string
 	switch secret.engine {
 	case enum.KeyValue1:
 		if len(version) > 0 {
-			log.Print("versions cannot be used with the KV1 secrets engine")
+			log.Print("versions cannot be used with the KV1 secrets engine, and the input parameter will be ignored")
 		}
 		// read kv secret
 		kvSecret, err = client.KVv1(secret.mount).Get(
@@ -97,7 +97,7 @@ func (secret *vaultSecret) retrieveKVSecret(client *vault.Client, version string
 			if err != nil {
 				log.Printf("KV2 version must be an integer, and %s was input instead", version)
 				// return empty values since error triggers at end of execution
-				return map[string]interface{}{}, Metadata{}, err
+				return map[string]any{}, Metadata{}, err
 			}
 
 			kvSecret, err = client.KVv2(secret.mount).GetVersion(
@@ -108,20 +108,20 @@ func (secret *vaultSecret) retrieveKVSecret(client *vault.Client, version string
 			if err != nil {
 				log.Printf("the KV2 secret at %s/%s could not be retrieved for version %d", secret.mount, secret.path, versionInt)
 				// return empty values since error triggers at end of execution
-				return map[string]interface{}{}, Metadata{}, err
+				return map[string]any{}, Metadata{}, err
 			}
 		}
 	default:
 		log.Printf("an invalid secret engine %s was selected", secret.engine)
-		return map[string]interface{}{}, Metadata{}, errors.New("invalid secret engine")
+		return map[string]any{}, Metadata{}, errors.New("invalid secret engine")
 	}
 
-	// verify secret read
+	// verify secret read (err from latest version)
 	if err != nil || kvSecret == nil {
 		log.Printf("failed to read secret at mount %s and path %s from %s secrets engine", secret.mount, secret.path, secret.engine)
 		log.Print(err)
 		// return empty values since error triggers at end of execution
-		return map[string]interface{}{}, Metadata{}, err
+		return map[string]any{}, Metadata{}, err
 	}
 
 	// initialize secret metadata
@@ -132,16 +132,16 @@ func (secret *vaultSecret) retrieveKVSecret(client *vault.Client, version string
 
 		// return partial information values since error triggers at end of execution
 		metadata.Version = version
-		return map[string]interface{}{}, metadata, err
+		return map[string]any{}, metadata, err
 	}
 
-	// return secret value and implicitly coerce type to map[string]interface{}
+	// return secret value and implicitly coerce type to map[string]any
 	metadata.Version = strconv.Itoa(kvSecret.VersionMetadata.Version)
 	return kvSecret.Data, metadata, nil
 }
 
 // populate key-value v1 pair secrets
-func (secret *vaultSecret) populateKV1Secret(client *vault.Client, secretValue map[string]interface{}) (Metadata, error) {
+func (secret *vaultSecret) populateKV1Secret(client *vault.Client, secretValue map[string]any) (Metadata, error) {
 	// put kv1 secret
 	err := client.KVv1(secret.mount).Put(
 		context.Background(),
@@ -163,7 +163,7 @@ func (secret *vaultSecret) populateKV1Secret(client *vault.Client, secretValue m
 }
 
 // populate key-value v2 pair secrets
-func (secret *vaultSecret) populateKV2Secret(client *vault.Client, secretValue map[string]interface{}, patch bool) (Metadata, error) {
+func (secret *vaultSecret) populateKV2Secret(client *vault.Client, secretValue map[string]any, patch bool) (Metadata, error) {
 	// declare error and kvSecret for return to cmd
 	var err error
 	var kvSecret *vault.KVSecret
@@ -199,12 +199,12 @@ func (secret *vaultSecret) populateKV2Secret(client *vault.Client, secretValue m
 	return metadata, nil
 }
 
-// convert *vault.Secret raw secret to secret metadata
+// convert *vault.Secret raw secret to secret metadata // TODO: return err on nil secret; seems like I convert raw secret lease duration to time.Duration multiple places
 func rawSecretToMetadata(rawSecret *vault.Secret) Metadata {
-	// returne metadata with fields populated from raw secret
+	// return metadata with fields populated from raw secret
 	return Metadata{
 		LeaseID:       rawSecret.LeaseID,
-		LeaseDuration: strconv.Itoa(rawSecret.LeaseDuration),
+		LeaseDuration: time.Second * time.Duration(rawSecret.LeaseDuration),
 		Renewable:     strconv.FormatBool(rawSecret.Renewable),
 		Version:       "0", // default value to be overwritten later
 	}

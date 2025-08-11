@@ -39,7 +39,7 @@ func NewVaultSecret(engineString string, mount string, path string) (*vaultSecre
 	}
 
 	// determine if secret is dynamic and default mount point
-	// note current schema renders default mount setting pointless, but it would ensure safety to retain
+	// note current enum renders default mount setting pointless, but it would ensure safety to retain
 	switch engine {
 	case enum.KeyValue1:
 		vaultSecret.dynamic = false
@@ -73,7 +73,7 @@ func (secret *vaultSecret) Dynamic() bool {
 }
 
 // return secret value, version, metadata, and possible error (GET/READ/READ)
-func (secret *vaultSecret) SecretValue(client *vault.Client, version string) (map[string]interface{}, Metadata, error) {
+func (secret *vaultSecret) SecretValue(client *vault.Client, version string) (map[string]any, Metadata, error) {
 	if secret.dynamic {
 		if secret.engine == enum.SSH {
 			return secret.sshGenerateCredentials(client)
@@ -86,7 +86,7 @@ func (secret *vaultSecret) SecretValue(client *vault.Client, version string) (ma
 }
 
 // populate key-value pair secrets and return version, metadata, and error (POST/WRITE/CREATE+PUT/PATCH/UPDATE)
-func (secret *vaultSecret) PopulateKVSecret(client *vault.Client, secretValue map[string]interface{}, patch bool) (Metadata, error) {
+func (secret *vaultSecret) PopulateKVSecret(client *vault.Client, secretValue map[string]any, patch bool) (Metadata, error) {
 	switch secret.engine {
 	case enum.KeyValue1:
 		return secret.populateKV1Secret(client, secretValue)

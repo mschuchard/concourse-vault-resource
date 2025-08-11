@@ -39,7 +39,7 @@ func VaultToConcourseMetadata(prefix string, secretMetadata vault.Metadata) []co
 	}
 	metadataEntries[1] = concourse.MetadataEntry{
 		Name:  prefix + "-LeaseDuration",
-		Value: secretMetadata.LeaseDuration,
+		Value: secretMetadata.LeaseDuration.String(),
 	}
 	metadataEntries[2] = concourse.MetadataEntry{
 		Name:  prefix + "-Renewable",

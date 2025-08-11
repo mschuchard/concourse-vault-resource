@@ -4,6 +4,7 @@ import (
 	"os"
 	"slices"
 	"testing"
+	"time"
 
 	"github.com/mschuchard/concourse-vault-resource/concourse"
 	"github.com/mschuchard/concourse-vault-resource/vault"
@@ -19,9 +20,10 @@ func TestSecretsToJsonFile(test *testing.T) {
 }
 
 func TestVaultToConcourseMetadata(test *testing.T) {
+	duration, _ := time.ParseDuration("65535s")
 	secretMetadata := vault.Metadata{
 		LeaseID:       "abcdefg12345",
-		LeaseDuration: "65535",
+		LeaseDuration: duration,
 		Renewable:     "false",
 	}
 	secretPath := "secret-foo/bar"
@@ -34,7 +36,7 @@ func TestVaultToConcourseMetadata(test *testing.T) {
 		},
 		{
 			Name:  secretPath + "-LeaseDuration",
-			Value: secretMetadata.LeaseDuration,
+			Value: secretMetadata.LeaseDuration.String(),
 		},
 		{
 			Name:  secretPath + "-Renewable",
