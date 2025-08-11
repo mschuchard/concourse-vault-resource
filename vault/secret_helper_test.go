@@ -12,9 +12,6 @@ import (
 // test secret generate credential
 func TestGenerateCredentials(test *testing.T) {}
 
-// test secret ssh generate credential
-func TestSSHGenerateCredentials(test *testing.T) {}
-
 // test secret key value secret
 func TestRetrieveKVSecret(test *testing.T) {
 	kv1VaultSecret, err := NewVaultSecret("kv1", "", util.KVPath)
@@ -138,7 +135,7 @@ func TestRawSecretToMetadata(test *testing.T) {
 
 	duration, _ := time.ParseDuration("65535s")
 	metadata := rawSecretToMetadata(rawSecret)
-	expectedMetadata := Metadata{LeaseID: rawSecret.LeaseID, LeaseDuration: duration, Renewable: "false", Version: "0"}
+	expectedMetadata := Metadata{LeaseID: rawSecret.LeaseID, LeaseDuration: duration, Renewable: false, Version: "0"}
 
 	if metadata != expectedMetadata {
 		test.Error("the converted metadata returned unexpected values")

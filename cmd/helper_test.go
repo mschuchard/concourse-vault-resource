@@ -24,7 +24,7 @@ func TestVaultToConcourseMetadata(test *testing.T) {
 	secretMetadata := vault.Metadata{
 		LeaseID:       "abcdefg12345",
 		LeaseDuration: duration,
-		Renewable:     "false",
+		Renewable:     false,
 	}
 	secretPath := "secret-foo/bar"
 
@@ -36,7 +36,7 @@ func TestVaultToConcourseMetadata(test *testing.T) {
 		},
 		{
 			Name:  secretPath + "-LeaseDuration",
-			Value: secretMetadata.LeaseDuration.String(),
+			Value: secretMetadata.LeaseDuration,
 		},
 		{
 			Name:  secretPath + "-Renewable",

@@ -15,17 +15,21 @@ import (
 type Metadata struct {
 	LeaseID       string
 	LeaseDuration time.Duration
-	Renewable     string
+	Renewable     bool
 	Version       string
 }
 
 // generate credentials
 func (secret *vaultSecret) generateCredentials(client *vault.Client) (map[string]any, Metadata, error) {
-	// initialize api endpoint for cred generation
-	endpoint := secret.mount + "/creds/" + secret.path
+	var rawSecret *vault.Secret
+	var err error
 
-	// GET the secret from the API endpoint
-	response, err := client.Logical().Read(endpoint)
+	// generate credentials based on secret engine type
+	if secret.engine == enum.SSH {
+		rawSecret, err = client.SSHWithMountPoint(secret.mount).Credential(secret.path, map[string]any{})
+	} else {
+		rawSecret, err = client.Logical().Read(secret.mount + "/creds/" + secret.path)
+	}
 	if err != nil {
 		log.Printf("failed to generate credentials for %s with %s secrets engine", secret.path, secret.engine)
 		log.Print(err)
@@ -33,35 +37,14 @@ func (secret *vaultSecret) generateCredentials(client *vault.Client) (map[string
 	}
 
 	// initialize secret metadata
-	metadata := rawSecretToMetadata(response)
+	metadata := rawSecretToMetadata(rawSecret)
 
 	// calculate the expiration time for version and assign to metadata
-	expirationTime := time.Now().Local().Add(time.Second * time.Duration(response.LeaseDuration))
+	expirationTime := time.Now().Local().Add(time.Second * time.Duration(rawSecret.LeaseDuration))
 	metadata.Version = expirationTime.Format("2006-01-02-150405")
 
 	// return secret value implicitly coerced to map[string]any, expiration time as version, and metadata
-	return response.Data, metadata, nil
-}
-
-// generate SSH credentials
-func (secret *vaultSecret) sshGenerateCredentials(client *vault.Client) (map[string]any, Metadata, error) {
-	// generate credentials
-	sshSecret, err := client.SSHWithMountPoint(secret.mount).Credential(secret.path, map[string]any{})
-	if err != nil {
-		log.Printf("failed to generate credentials for %s with ssh secrets engine", secret.path)
-		log.Print(err)
-		return map[string]any{}, Metadata{}, err
-	}
-
-	// initialize secret metadata
-	metadata := rawSecretToMetadata(sshSecret)
-
-	// calculate the expiration time for version and assign to metadata
-	expirationTime := time.Now().Local().Add(time.Second * time.Duration(sshSecret.LeaseDuration))
-	metadata.Version = expirationTime.Format("2006-01-02-150405")
-
-	// return secret value and implicitly coerce type to map[string]any
-	return sshSecret.Data, metadata, nil
+	return rawSecret.Data, metadata, nil
 }
 
 // retrieve key-value pair secrets
@@ -199,13 +182,13 @@ func (secret *vaultSecret) populateKV2Secret(client *vault.Client, secretValue m
 	return metadata, nil
 }
 
-// convert *vault.Secret raw secret to secret metadata // TODO: return err on nil secret; seems like I convert raw secret lease duration to time.Duration multiple places
+// convert *vault.Secret raw secret to secret metadata // TODO: return err on nil secret; seems like I convert raw secret lease duration to time.Duration multiple places; can metadata entry be any?
 func rawSecretToMetadata(rawSecret *vault.Secret) Metadata {
 	// return metadata with fields populated from raw secret
 	return Metadata{
 		LeaseID:       rawSecret.LeaseID,
 		LeaseDuration: time.Second * time.Duration(rawSecret.LeaseDuration),
-		Renewable:     strconv.FormatBool(rawSecret.Renewable),
+		Renewable:     rawSecret.Renewable,
 		Version:       "0", // default value to be overwritten later
 	}
 }

@@ -75,11 +75,7 @@ func (secret *vaultSecret) Dynamic() bool {
 // return secret value, version, metadata, and possible error (GET/READ/READ)
 func (secret *vaultSecret) SecretValue(client *vault.Client, version string) (map[string]any, Metadata, error) {
 	if secret.dynamic {
-		if secret.engine == enum.SSH {
-			return secret.sshGenerateCredentials(client)
-		} else {
-			return secret.generateCredentials(client)
-		}
+		return secret.generateCredentials(client)
 	} else {
 		return secret.retrieveKVSecret(client, version)
 	}
