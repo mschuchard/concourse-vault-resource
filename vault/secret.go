@@ -118,7 +118,11 @@ func (secret *vaultSecret) Renew(client *vault.Client, leaseIdSuffix string) (Me
 	expirationTime := time.Now().Local().Add(time.Second * time.Duration(rawSecret.LeaseDuration))
 
 	// initialize secret metadata and assign version
-	metadata := rawSecretToMetadata(rawSecret)
+	metadata, err := rawSecretToMetadata(rawSecret)
+	if err != nil {
+		log.Print("raw secret could not be converted to metadata")
+		return Metadata{}, err
+	}
 	metadata.Version = expirationTime.Format("2006-01-02-150405")
 
 	// convert raw secret to metadata and return metadata and version

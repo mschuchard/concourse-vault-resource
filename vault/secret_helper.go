@@ -37,7 +37,11 @@ func (secret *vaultSecret) generateCredentials(client *vault.Client) (map[string
 	}
 
 	// initialize secret metadata
-	metadata := rawSecretToMetadata(rawSecret)
+	metadata, err := rawSecretToMetadata(rawSecret)
+	if err != nil {
+		log.Print("raw secret could not be converted to metadata")
+		return map[string]any{}, Metadata{}, err
+	}
 
 	// calculate the expiration time for version and assign to metadata
 	expirationTime := time.Now().Local().Add(time.Second * time.Duration(rawSecret.LeaseDuration))
@@ -108,7 +112,11 @@ func (secret *vaultSecret) retrieveKVSecret(client *vault.Client, version string
 	}
 
 	// initialize secret metadata
-	metadata := rawSecretToMetadata(kvSecret.Raw)
+	metadata, err := rawSecretToMetadata(kvSecret.Raw)
+	if err != nil {
+		log.Print("raw secret could not be converted to metadata")
+		return map[string]any{}, Metadata{}, err
+	}
 
 	if kvSecret.Data == nil { // verify version exists
 		log.Printf("the input version %s (0 signifies latest) does not exist for the secret at mount %s and path %s from %s secrets engine", version, secret.mount, secret.path, secret.engine)
@@ -139,7 +147,11 @@ func (secret *vaultSecret) populateKV1Secret(client *vault.Client, secretValue m
 	}
 
 	// initialize secret metadata and assign dummy version
-	metadata := rawSecretToMetadata(&vault.Secret{})
+	metadata, err := rawSecretToMetadata(&vault.Secret{})
+	if err != nil {
+		log.Print("raw secret could not be converted to metadata")
+		return Metadata{}, err
+	}
 	metadata.Version = "0"
 
 	return metadata, nil
@@ -175,20 +187,29 @@ func (secret *vaultSecret) populateKV2Secret(client *vault.Client, secretValue m
 	}
 
 	// initialize secret metadata and assign version
-	metadata := rawSecretToMetadata(kvSecret.Raw)
+	metadata, err := rawSecretToMetadata(kvSecret.Raw)
+	if err != nil {
+		log.Print("raw secret could not be converted to metadata")
+		return Metadata{}, err
+	}
 	metadata.Version = strconv.Itoa(kvSecret.VersionMetadata.Version)
 
 	// return no error
 	return metadata, nil
 }
 
-// convert *vault.Secret raw secret to secret metadata // TODO: return err on nil secret; seems like I convert raw secret lease duration to time.Duration multiple places; can metadata entry be any?
-func rawSecretToMetadata(rawSecret *vault.Secret) Metadata {
+// convert *vault.Secret raw secret to secret metadata // TODO: seems like I convert raw secret lease duration to time.Duration multiple places
+func rawSecretToMetadata(rawSecret *vault.Secret) (Metadata, error) {
+	if rawSecret == nil {
+		log.Print("the raw secret is nil, and metadata cannot be constructed from it")
+		return Metadata{}, errors.New("nil raw secret")
+	}
+
 	// return metadata with fields populated from raw secret
 	return Metadata{
 		LeaseID:       rawSecret.LeaseID,
 		LeaseDuration: time.Second * time.Duration(rawSecret.LeaseDuration),
 		Renewable:     rawSecret.Renewable,
 		Version:       "0", // default value to be overwritten later
-	}
+	}, nil
 }

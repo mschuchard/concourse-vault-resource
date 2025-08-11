@@ -1,3 +1,7 @@
+### 1.2.3 (Next)
+- Improve metadata formatting.
+- Improve credential generation.
+
 ### 1.2.2
 - Improve expiration time format in metadata version.
 - Properly utilize `aws_mount_path` `source` parameter.

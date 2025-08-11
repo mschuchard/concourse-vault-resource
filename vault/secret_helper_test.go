@@ -134,7 +134,11 @@ func TestRawSecretToMetadata(test *testing.T) {
 	}
 
 	duration, _ := time.ParseDuration("65535s")
-	metadata := rawSecretToMetadata(rawSecret)
+	metadata, err := rawSecretToMetadata(rawSecret)
+	if err != nil {
+		test.Error("the raw secret to metadata conversion errored unexpectedly")
+		test.Error(err)
+	}
 	expectedMetadata := Metadata{LeaseID: rawSecret.LeaseID, LeaseDuration: duration, Renewable: false, Version: "0"}
 
 	if metadata != expectedMetadata {
