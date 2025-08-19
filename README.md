@@ -1,6 +1,6 @@
 # Concourse Vault Resource
 
-A [concourse-ci](https://concourse-ci.org) resource for interacting with secrets via [Vault](https://www.vaultproject.io). This plugin's code at `HEAD` is currently tested against Vault version 1.18.5. The most recent release was tested against 1.17.6.
+A [concourse-ci](https://concourse-ci.org) resource for interacting with secrets via [Vault](https://www.vaultproject.io).
 
 This resource's container image is currently hosted at [matthewschuchard/concourse-vault-resource](https://hub.docker.com/repository/docker/matthewschuchard/concourse-vault-resource) for usage within Concourse.
 
@@ -58,7 +58,7 @@ version:
 
 ### `check`: returns secret versions between input version and retrieved version sequentially and inclusive
 
-NOTE: currently the KV1 secrets engine is unsupported due to lack of versioning  
+NOTE: currently the KV1 secrets engine is unsupported due to lack of versioning
 NOTE: if the specified secret is dynamic, then the input version is ignored because the comparison is between the current time and the secret expiration time
 
 This step has no parameters, and utilizes the `source` and `version` values for functionality. It also executes automatically during resource instantiation.
@@ -149,9 +149,9 @@ Below is the general structure of the generated Concourse metadata.
 
 ```json
 {
-  "<MOUNT>-<PATH>-LeaseID": "secret lease id",
-  "<MOUNT>-<PATH>-LeaseDuration": "secret lease duration",
-  "<MOUNT>-<PATH>-Renewable": "whether secret is renewable"
+  "<MOUNT>-<PATH>-LeaseID": "secret lease id as string",
+  "<MOUNT>-<PATH>-LeaseDuration": "secret lease duration as time.Duration in seconds",
+  "<MOUNT>-<PATH>-Renewable": "whether secret is renewable as bool"
 }
 ```
 
