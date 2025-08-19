@@ -11,9 +11,9 @@ import (
 )
 
 // minimum coverage testing for helper functions
-func TestSecretsToJsonFile(test *testing.T) {
+func TestSecretsToJSONFile(test *testing.T) {
 	secretValues := concourse.SecretValues{"secretValue": {"key": "value"}}
-	if err := SecretsToJsonFile(".", secretValues); err != nil {
+	if err := SecretsToJSONFile(".", secretValues); err != nil {
 		test.Error(err)
 	}
 	defer os.Remove("./vault.json")

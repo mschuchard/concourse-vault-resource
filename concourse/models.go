@@ -85,7 +85,7 @@ func NewCheckRequest(pipelineJSON io.Reader) (*checkRequest, error) {
 	// read, decode, and unmarshal the pipeline json io.Reader, and assign to the inRequest pointer
 	var checkRequest checkRequest
 	if err := json.NewDecoder(pipelineJSON).Decode(&checkRequest); err != nil {
-		log.Print("error decoding pipline input from JSON")
+		log.Print("error decoding pipeline input from JSON")
 		return nil, err
 	}
 
@@ -118,7 +118,7 @@ func NewInRequest(pipelineJSON io.Reader) (*inRequest, error) {
 	// read, decode, and unmarshal the pipeline json io.Reader, and assign to the inRequest pointer
 	var inRequest inRequest
 	if err := json.NewDecoder(pipelineJSON).Decode(&inRequest); err != nil {
-		log.Print("error decoding pipline input from JSON")
+		log.Print("error decoding pipeline input from JSON")
 		return nil, err
 	}
 
@@ -158,7 +158,7 @@ func NewOutRequest(pipelineJSON io.Reader) (*outRequest, error) {
 	// read, decode, and unmarshal the pipeline json io.Reader, and assign to the outRequest pointer
 	var outRequest outRequest
 	if err := json.NewDecoder(pipelineJSON).Decode(&outRequest); err != nil {
-		log.Print("error decoding pipline input from JSON")
+		log.Print("error decoding pipeline input from JSON")
 		return nil, err
 	}
 	// validate
