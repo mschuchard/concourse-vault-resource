@@ -71,11 +71,16 @@ func main() {
 		if secret.Dynamic() {
 			// this is a dynamically generated credential so renew it
 			log.Printf("the secret '%s' is dynamic and will be renewed", secretSource.Path)
-			secret.Renew(vaultClient, secretSource.LeaseId)
-		} else {
-			// dummy a return for the versions using the original version return
-			versions = []concourse.Version{{Version: secretMetadata.Version}}
+
+			secretMetadata, err = secret.Renew(vaultClient, secretSource.LeaseId)
+			if err != nil {
+				log.Printf("failed to renew dynamic secret for %s engine, %s mount, and path %s", secretSource.Engine, secretSource.Mount, secretSource.Path)
+				log.Fatal(err)
+			}
 		}
+		// assign versions through returned metadata re-assignment during renewal
+		// OR dummy a return for the versions using the original metadata return
+		versions = []concourse.Version{{Version: secretMetadata.Version}}
 	} else {
 		// validate that the input version is <= the latest retrieved version
 		if inputVersion > getVersionInt {

@@ -3,6 +3,8 @@
 - Improve credential generation and expiratiom time calculation.
 - Validate raw secret before metadata conversion.
 - Improve error logging.
+- Fix incorrect returned version of dynamic secret post-renewal.
+- Fix validation of secret renewal in `check` step.
 
 ### 1.2.2
 - Improve expiration time format in metadata version.
@@ -34,5 +36,3 @@
 
 ### 1.0.0
 - Initial release.
-
-secret.Renew return not being used
