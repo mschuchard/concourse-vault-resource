@@ -2,6 +2,7 @@
 - Improve metadata formatting.
 - Improve credential generation and expiratiom time calculation.
 - Validate raw secret before metadata conversion.
+- Improve error logging.
 
 ### 1.2.2
 - Improve expiration time format in metadata version.
@@ -33,3 +34,5 @@
 
 ### 1.0.0
 - Initial release.
+
+secret.Renew return not being used

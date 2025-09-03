@@ -32,8 +32,6 @@ func main() {
 	for mount, secretParams := range outRequest.Params {
 		// iterate through secrets and assign each path to each vault secret path, and write each secret value to the path
 		for secretPath, secretValue := range secretParams.Secrets {
-			// declare because implicit type deduction not allowed
-			var secretMetadata vault.Metadata
 			// initialize vault secret from concourse params
 			secret, nestedErr := vault.NewVaultSecret(secretParams.Engine, mount, secretPath)
 			// on failure log the issue and then attempt next secret
@@ -50,7 +48,7 @@ func main() {
 			// declare identifier and rawSecret
 			identifier := mount + "-" + secretPath
 			// write the secret value to the path for the specified mount and engine
-			secretMetadata, nestedErr = secret.PopulateKVSecret(vaultClient, secretValue, secretParams.Patch)
+			secretMetadata, nestedErr := secret.PopulateKVSecret(vaultClient, secretValue, secretParams.Patch)
 			outResponse.Version[identifier] = secretMetadata.Version
 
 			if nestedErr != nil {

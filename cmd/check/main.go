@@ -53,13 +53,15 @@ func main() {
 	// retrieve version for secret
 	_, secretMetadata, err := secret.SecretValue(vaultClient, "")
 	if err != nil {
-		log.Fatalf("version could not be retrieved for %s engine, %s mount, and path %s secret", secretSource.Engine, secretSource.Mount, secretSource.Path)
+		log.Printf("version could not be retrieved for %s engine, %s mount, and path %s secret", secretSource.Engine, secretSource.Mount, secretSource.Path)
+		log.Fatal(err)
 	}
 
 	// assign input and get version and initialize versions slice
 	inputVersion, err := strconv.Atoi(checkRequest.Version.Version)
 	if err != nil {
-		log.Fatalf("the input version '%s' in source is not a valid integer", checkRequest.Version.Version)
+		log.Printf("the input version '%s' in source is not a valid integer", checkRequest.Version.Version)
+		log.Fatal(err)
 	}
 	versions := []concourse.Version{}
 	getVersionInt, err := strconv.Atoi(secretMetadata.Version)
