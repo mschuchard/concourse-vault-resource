@@ -6,6 +6,8 @@ import (
 	"io"
 	"log"
 	"regexp"
+
+	"github.com/mschuchard/concourse-vault-resource/enum"
 )
 
 // custom type structs supporting concourse models for input and outputs
@@ -18,20 +20,20 @@ type checkRequest struct {
 type checkResponse []Version
 
 type Source struct {
-	AuthEngine   string       `json:"auth_engine,omitempty"`
-	Address      string       `json:"address,omitempty"`
-	AWSMountPath string       `json:"aws_mount_path,omitempty"`
-	AWSVaultRole string       `json:"aws_vault_role,omitempty"`
-	Token        string       `json:"token,omitempty"`
-	Insecure     bool         `json:"insecure"`
-	Secret       SecretSource `json:"secret"`
+	AuthEngine   enum.AuthEngine `json:"auth_engine,omitempty"`
+	Address      string          `json:"address,omitempty"`
+	AWSMountPath string          `json:"aws_mount_path,omitempty"`
+	AWSVaultRole string          `json:"aws_vault_role,omitempty"`
+	Token        string          `json:"token,omitempty"`
+	Insecure     bool            `json:"insecure"`
+	Secret       SecretSource    `json:"secret"`
 }
 
 type SecretSource struct {
-	Engine  string `json:"engine"`
-	Mount   string `json:"mount"`
-	Path    string `json:"path"`
-	LeaseId string `json:"lease_id"`
+	Engine  enum.SecretEngine `json:"engine"`
+	Mount   string            `json:"mount"`
+	Path    string            `json:"path"`
+	LeaseId string            `json:"lease_id"`
 }
 
 type Version struct {
@@ -47,8 +49,8 @@ type inRequest struct {
 }
 
 type secrets struct {
-	Engine string   `json:"engine"`
-	Paths  []string `json:"paths"`
+	Engine enum.SecretEngine `json:"engine"`
+	Paths  []string          `json:"paths"`
 }
 
 type response struct {
@@ -70,8 +72,8 @@ type outRequest struct {
 }
 
 type secretsPut struct {
-	Engine string `json:"engine"`
-	Patch  bool   `json:"patch"`
+	Engine enum.SecretEngine `json:"engine"`
+	Patch  bool              `json:"patch"`
 	// key is secret path
 	Secrets SecretValues `json:"secrets"`
 }
@@ -94,7 +96,7 @@ func NewCheckRequest(pipelineJSON io.Reader) (*checkRequest, error) {
 
 	// validate version not specified for kv1
 	secretSource := checkRequest.Source.Secret
-	if secretSource.Engine == "kv1" && checkRequest.Version != (Version{}) {
+	if secretSource.Engine == enum.KeyValue1 && checkRequest.Version != (Version{}) {
 		log.Print("version cannot be specified in conjunction with a kv version 1 engine secret")
 		return nil, errors.New("secret version specified with kv1")
 	}

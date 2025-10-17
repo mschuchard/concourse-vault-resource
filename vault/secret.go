@@ -18,15 +18,15 @@ type vaultSecret struct {
 }
 
 // secret constructor
-func NewVaultSecret(engineString string, mount string, path string) (*vaultSecret, error) {
+func NewVaultSecret(engine enum.SecretEngine, mount string, path string) (*vaultSecret, error) {
 	// validate mandatory fields specified
-	if len(engineString) == 0 || len(path) == 0 {
+	if len(engine) == 0 || len(path) == 0 {
 		log.Print("the secret engine and path parameters are mandatory")
 		return nil, errors.New("required param(s) missing")
 	}
 
 	// validate engine parameter
-	engine, err := enum.SecretEngine(engineString).New()
+	_, err := engine.New()
 	if err != nil {
 		return nil, err
 	}

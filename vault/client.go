@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"net/url"
+	"strings"
 
 	vault "github.com/hashicorp/vault/api"
 	auth "github.com/hashicorp/vault/api/auth/aws"
@@ -32,7 +33,7 @@ func NewVaultClient(source concourse.Source) (*vault.Client, error) {
 	}
 
 	// insecure validation
-	if !source.Insecure && source.Address[0:5] == "http:" {
+	if !source.Insecure && strings.HasPrefix(source.Address, "http:") {
 		log.Print("insecure input parameter was omitted or specified as false, and address protocol is http")
 		log.Print("insecure will be reset to value of true")
 		source.Insecure = true
@@ -67,7 +68,7 @@ func NewVaultClient(source concourse.Source) (*vault.Client, error) {
 	token := source.Token
 	awsMountPath := source.AWSMountPath
 	awsRole := source.AWSVaultRole
-	engine, err := enum.AuthEngine(source.AuthEngine).New()
+	engine, err := source.AuthEngine.New()
 
 	// determine vault auth engine if unspecified
 	if len(source.AuthEngine) == 0 {
