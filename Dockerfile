@@ -1,4 +1,4 @@
-FROM golang:1.24-alpine as build
+FROM golang:1.24-alpine AS build
 WORKDIR /go/src/github.com/mschuchard/concourse-vault-plugin
 COPY . .
 RUN apk add make && make release

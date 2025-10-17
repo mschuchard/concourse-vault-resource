@@ -14,9 +14,11 @@ const (
 	VaultToken AuthEngine = "token"
 )
 
+var authEngines []AuthEngine = []AuthEngine{AWSIAM, VaultToken}
+
 // authengine type conversion
 func (a AuthEngine) New() (AuthEngine, error) {
-	if a != AWSIAM && a != VaultToken {
+	if !slices.Contains(authEngines, a) {
 		log.Printf("string %s could not be converted to AuthEngine enum", a)
 		return "", errors.New("invalid authengine enum")
 	}
@@ -42,9 +44,11 @@ const (
 	KeyValue2 SecretEngine = "kv2"
 )
 
+var secretEngines []SecretEngine = []SecretEngine{Database, AWS, Azure, Consul, Kubernetes, Nomad, RabbitMQ, SSH, Terraform, KeyValue1, KeyValue2}
+
 // secretengine type conversion
 func (s SecretEngine) New() (SecretEngine, error) {
-	if !slices.Contains([]SecretEngine{Database, AWS, Azure, Consul, Kubernetes, Nomad, RabbitMQ, SSH, Terraform, KeyValue1, KeyValue2}, s) {
+	if !slices.Contains(secretEngines, s) {
 		log.Printf("string %s could not be converted to SecretEngine enum", s)
 		return "", errors.New("invalid secretengine enum")
 	}

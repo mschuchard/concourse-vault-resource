@@ -1,3 +1,6 @@
+### 1.2.4 (Next)
+- Minor code optimization.
+
 ### 1.2.3
 - Improve metadata formatting.
 - Improve credential generation and expiratiom time calculation.
