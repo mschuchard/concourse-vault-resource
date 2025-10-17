@@ -80,7 +80,10 @@ type SecretValues map[string]secretValue // key is secret "<mount>-<path>", and 
 
 type secretValue map[string]any // key-value pairs would be arbitrary for kv1 and kv2, but are standardized schema for credential generators
 
-// inRequest constructor with pipeline param as io.Reader but typically os.Stdin *os.File input because concourse
+// lease id validation regex for below constructor
+var leaseIDRegex = regexp.MustCompile(`\w{8}-\w{4}-\w{4}-\w{4}-\w{12}`)
+
+// checkRequest constructor with pipeline param as io.Reader but typically os.Stdin *os.File input because concourse
 func NewCheckRequest(pipelineJSON io.Reader) (*checkRequest, error) {
 	// read, decode, and unmarshal the pipeline json io.Reader, and assign to the inRequest pointer
 	var checkRequest checkRequest
@@ -98,7 +101,7 @@ func NewCheckRequest(pipelineJSON io.Reader) (*checkRequest, error) {
 
 	// validate lease id if specified
 	if len(secretSource.LeaseId) > 0 {
-		if matched, err := regexp.MatchString(`\w{8}-\w{4}-\w{4}-\w{4}-\w{12}`, secretSource.LeaseId); !matched || err != nil {
+		if !leaseIDRegex.MatchString(secretSource.LeaseId) {
 			log.Printf("the specified lease id %s is invalid", secretSource.LeaseId)
 			return nil, errors.New("invalid lease id parameter")
 		}
