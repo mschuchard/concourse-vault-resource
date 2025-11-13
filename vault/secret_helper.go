@@ -32,7 +32,6 @@ func (secret *vaultSecret) generateCredentials(client *vault.Client) (map[string
 	}
 	if err != nil {
 		log.Printf("failed to generate credentials for %s with %s secrets engine", secret.path, secret.engine)
-		log.Print(err)
 		return map[string]any{}, Metadata{}, err
 	}
 
@@ -106,7 +105,6 @@ func (secret *vaultSecret) retrieveKVSecret(client *vault.Client, version string
 	// verify secret read (err from latest version)
 	if err != nil || kvSecret == nil {
 		log.Printf("failed to read secret at mount %s and path %s from %s secrets engine", secret.mount, secret.path, secret.engine)
-		log.Print(err)
 		// return empty values since error triggers at end of execution
 		return map[string]any{}, Metadata{}, err
 	}
@@ -142,7 +140,6 @@ func (secret *vaultSecret) populateKV1Secret(client *vault.Client, secretValue m
 	// verify secret put
 	if err != nil {
 		log.Printf("failed to update secret %s into %s secrets Engine", secret.path, secret.engine)
-		log.Print(err)
 		return Metadata{}, err
 	}
 
@@ -182,7 +179,6 @@ func (secret *vaultSecret) populateKV2Secret(client *vault.Client, secretValue m
 	// verify secret patch/put
 	if err != nil {
 		log.Printf("failed to update secret %s into %s secrets Engine", secret.path, secret.engine)
-		log.Print(err)
 		return Metadata{}, err
 	}
 
