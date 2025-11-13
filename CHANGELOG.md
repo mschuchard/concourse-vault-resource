@@ -1,5 +1,6 @@
 ### 1.2.4 (Next)
 - Minor code optimization.
+- Improve authentication token format validation.
 
 ### 1.2.3
 - Improve metadata formatting.

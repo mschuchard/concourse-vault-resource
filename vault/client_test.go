@@ -80,7 +80,7 @@ func TestNewVaultClient(test *testing.T) {
 		test.Errorf("expected error: invalid authengine enum, actual: %s", err)
 	}
 
-	invalidToken := concourse.Source{Token: "foobarbaz"}
+	invalidToken := concourse.Source{Token: "foobarbaz123!"}
 	if _, err := NewVaultClient(invalidToken); err == nil || err.Error() != "invalid vault token" {
 		test.Errorf("expected error: invalid vault token, actual: %s", err)
 	}
