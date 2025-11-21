@@ -121,7 +121,7 @@ func (secret *vaultSecret) retrieveKVSecret(client *vault.Client, version string
 
 		// return partial information values since error triggers at end of execution
 		metadata.Version = version
-		return map[string]any{}, metadata, err
+		return map[string]any{}, metadata, errors.New("secret version does not exist")
 	}
 
 	// return secret value and implicitly coerce type to map[string]any

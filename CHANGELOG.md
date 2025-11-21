@@ -1,6 +1,7 @@
 ### 1.2.4 (Next)
 - Minor code optimization.
 - Explicitly marshal Concourse metadata values as Strings.
+- Fix error returned for KV secret with nonexistent specified version.
 - Improve authentication token format validation.
 - Improve lease id validation.
 
