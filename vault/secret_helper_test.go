@@ -139,8 +139,8 @@ func TestRawSecretToMetadata(test *testing.T) {
 		test.Error("the raw secret to metadata conversion errored unexpectedly")
 		test.Error(err)
 	}
-	expectedMetadata := Metadata{LeaseID: rawSecret.LeaseID, LeaseDuration: duration, Renewable: false, Version: "0"}
 
+	expectedMetadata := Metadata{LeaseID: rawSecret.LeaseID, LeaseDuration: duration, Renewable: false, Version: "0"}
 	if metadata != expectedMetadata {
 		test.Error("the converted metadata returned unexpected values")
 		test.Errorf("expected values: %v", expectedMetadata)

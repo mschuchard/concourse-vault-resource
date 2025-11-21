@@ -1,5 +1,6 @@
 ### 1.2.4 (Next)
 - Minor code optimization.
+- Explicitly marshal Concourse metadata values as Strings.
 - Improve authentication token format validation.
 - Improve lease id validation.
 

@@ -78,6 +78,7 @@ func main() {
 				log.Fatal(err)
 			}
 		}
+
 		// assign versions through returned metadata re-assignment during renewal
 		// OR dummy a return for the versions using the original metadata return
 		versions = []concourse.Version{{Version: secretMetadata.Version}}

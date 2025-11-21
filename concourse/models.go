@@ -60,7 +60,7 @@ type response struct {
 
 type MetadataEntry struct {
 	Name  string `json:"name"`
-	Value any    `json:"value"`
+	Value string `json:"value"`
 }
 
 type responseVersion map[string]string // key is "<mount>-<path>" and value is version of secret

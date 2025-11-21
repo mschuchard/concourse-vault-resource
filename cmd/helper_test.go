@@ -3,6 +3,7 @@ package helper
 import (
 	"os"
 	"slices"
+	"strconv"
 	"testing"
 	"time"
 
@@ -36,11 +37,11 @@ func TestVaultToConcourseMetadata(test *testing.T) {
 		},
 		{
 			Name:  secretPath + "-LeaseDuration",
-			Value: secretMetadata.LeaseDuration,
+			Value: secretMetadata.LeaseDuration.String(),
 		},
 		{
 			Name:  secretPath + "-Renewable",
-			Value: secretMetadata.Renewable,
+			Value: strconv.FormatBool(secretMetadata.Renewable),
 		},
 	}
 

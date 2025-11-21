@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"os"
+	"strconv"
 
 	"github.com/mschuchard/concourse-vault-resource/concourse"
 	"github.com/mschuchard/concourse-vault-resource/vault"
@@ -37,11 +38,11 @@ func VaultToConcourseMetadata(prefix string, secretMetadata vault.Metadata) []co
 		},
 		{
 			Name:  prefix + "-LeaseDuration",
-			Value: secretMetadata.LeaseDuration,
+			Value: secretMetadata.LeaseDuration.String(),
 		},
 		{
 			Name:  prefix + "-Renewable",
-			Value: secretMetadata.Renewable,
+			Value: strconv.FormatBool(secretMetadata.Renewable),
 		},
 	}
 }
