@@ -14,49 +14,13 @@ var (
 		Token:   util.VaultToken,
 	}
 	awsSourceConfig = concourse.Source{
-		Address:      "https://192.168.9.10",
+		Address:      util.VaultAddress,
 		AWSVaultRole: "myIAMRole",
 	}
 )
 
 // test client constructor
 func TestNewVaultClient(test *testing.T) {
-	/*basicVaultConfig, err := NewVaultConfig(basicSourceConfig)
-	if err != nil {
-		test.Error("the basic vault config did not successfully validate")
-		test.Error(err)
-	}
-	expectedVaultConfig := vaultConfig{
-		address:  util.VaultAddress,
-		engine:   token,
-		token:    util.VaultToken,
-		insecure: true,
-	}
-
-	if *basicVaultConfig != expectedVaultConfig {
-		test.Error("the vault basic config constructor returned unexpected values.")
-		test.Errorf("expected vault config: %v", expectedVaultConfig)
-		test.Errorf("actual vault config: %v", *basicVaultConfig)
-	}
-
-	basicVaultConfig, err = NewVaultConfig(awsSourceConfig)
-	if err != nil {
-		test.Error("the aws vault config did not successfully validate")
-		test.Error(err)
-	}
-	expectedVaultConfig = vaultConfig{
-		address:      "https://192.168.9.10",
-		engine:       awsIam,
-		awsMountPath: "aws",
-		awsRole:      "myIAMRole",
-	}
-
-	if *basicVaultConfig != expectedVaultConfig {
-		test.Error("the vault aws config constructor returned unexpected values.")
-		test.Errorf("expected vault config: %v", expectedVaultConfig)
-		test.Errorf("actual vault config: %v", *basicVaultConfig)
-	}*/
-
 	basicClient, err := NewVaultClient(basicSourceConfig)
 	if err != nil {
 		test.Error("authenticating a vault client with a basic token config errored")
@@ -68,20 +32,39 @@ func TestNewVaultClient(test *testing.T) {
 		test.Errorf("expected Vault address: %s, actual: %s", basicSourceConfig.Address, basicClient.Address())
 	}
 
-	awsSourceConfig.Address = util.VaultAddress
-	if _, err = NewVaultClient(awsSourceConfig); err == nil || !strings.Contains(err.Error(), "NoCredentialProviders: no valid providers in chain") {
+	// test errors
+	invalidServerConfig := concourse.Source{Address: "https//:foo.com"}
+	if _, err := NewVaultClient(invalidServerConfig); err == nil || err.Error() != "parse \"https//:foo.com\": invalid URI for request" {
+		test.Errorf("expected error: parse \"https//:foo.com\": invalid URI for request, actual: %s", err)
+	}
+}
+
+// test client auth
+func TestAuthClient(test *testing.T) {
+	if err := authClient(basicSourceConfig, util.VaultClient); err != nil {
+		test.Error("authenticating a vault client with a basic token config errored")
+		test.Error(err)
+	}
+
+	if err := authClient(awsSourceConfig, util.VaultClient); err == nil || !strings.Contains(err.Error(), "NoCredentialProviders: no valid providers in chain") {
+		test.Error("authenticating a vault client with aws did not error in the expected manner")
+		test.Errorf("expected error (contains): NoCredentialProviders: no valid providers in chain, actual: %v", err)
+	}
+
+	awsSourceConfig.AWSVaultRole = ""
+	if err := authClient(awsSourceConfig, util.VaultClient); err == nil || !strings.Contains(err.Error(), "NoCredentialProviders: no valid providers in chain") {
 		test.Error("authenticating a vault client with aws did not error in the expected manner")
 		test.Errorf("expected error (contains): NoCredentialProviders: no valid providers in chain, actual: %v", err)
 	}
 
 	// test errors
 	invalidAuth := concourse.Source{AuthEngine: "does not exist"}
-	if _, err := NewVaultClient(invalidAuth); err == nil || err.Error() != "invalid authengine enum" {
+	if err := authClient(invalidAuth, util.VaultClient); err == nil || err.Error() != "invalid authengine enum" {
 		test.Errorf("expected error: invalid authengine enum, actual: %s", err)
 	}
 
 	invalidToken := concourse.Source{Token: "foobarbaz123!"}
-	if _, err := NewVaultClient(invalidToken); err == nil || err.Error() != "invalid vault token" {
+	if err := authClient(invalidToken, util.VaultClient); err == nil || err.Error() != "invalid vault token" {
 		test.Errorf("expected error: invalid vault token, actual: %s", err)
 	}
 
@@ -89,12 +72,7 @@ func TestNewVaultClient(test *testing.T) {
 		Token:        util.VaultToken,
 		AWSMountPath: "gcp",
 	}
-	if _, err := NewVaultClient(ambiguousAuth); err == nil || err.Error() != "unable to deduce authentication engine" {
+	if err := authClient(ambiguousAuth, util.VaultClient); err == nil || err.Error() != "unable to deduce authentication engine" {
 		test.Errorf("expected error: unable to deduce authentication engine, actual: %s", err)
-	}
-
-	invalidServerConfig := concourse.Source{Address: "https//:foo.com"}
-	if _, err := NewVaultClient(invalidServerConfig); err == nil || err.Error() != "parse \"https//:foo.com\": invalid URI for request" {
-		test.Errorf("expected error: parse \"https//:foo.com\": invalid URI for request, actual: %s", err)
 	}
 }

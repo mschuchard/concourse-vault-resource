@@ -105,7 +105,7 @@ func authClient(source concourse.Source, client *vault.Client) error {
 		return err
 	}
 
-	// determine authentication method
+	// determine vault authentication method
 	switch engine {
 	case enum.VaultToken:
 		// validate vault token
