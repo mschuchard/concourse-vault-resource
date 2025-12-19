@@ -65,6 +65,18 @@ func NewVaultClient(source concourse.Source) (*vault.Client, error) {
 		return nil, errors.New("vault sealed")
 	}
 
+	// authenticate vault client
+	if err := authClient(source, client); err != nil {
+		log.Print("unable to authenticate Vault client")
+		return nil, err
+	}
+
+	// return authenticated vault client
+	return client, nil
+}
+
+// determine authentication method and authenticate client
+func authClient(source concourse.Source, client *vault.Client) error {
 	// initialize locals
 	token := source.Token
 	awsMountPath := source.AWSMountPath
@@ -80,7 +92,7 @@ func NewVaultClient(source concourse.Source) (*vault.Client, error) {
 		if len(token) > 0 && (len(awsMountPath) > 0 || len(awsRole) > 0) {
 			log.Print("token and AWS mount path or AWS role were simultaneously specified; these are mutually exclusive options")
 			log.Print("intended authentication engine could not be determined from other parameters")
-			return nil, errors.New("unable to deduce authentication engine")
+			return errors.New("unable to deduce authentication engine")
 		}
 		if len(token) == 0 {
 			log.Print("AWS IAM authentication will be utilized with the Vault client")
@@ -90,7 +102,7 @@ func NewVaultClient(source concourse.Source) (*vault.Client, error) {
 			engine = enum.VaultToken
 		}
 	} else if err != nil { // return error if invalid engine was specified
-		return nil, err
+		return err
 	}
 
 	// determine authentication method
@@ -99,7 +111,7 @@ func NewVaultClient(source concourse.Source) (*vault.Client, error) {
 		// validate vault token
 		if matched, _ := regexp.MatchString(`^[a-zA-Z0-9.]+$`, token); !matched {
 			log.Print("the specified Vault Token is invalid")
-			return nil, errors.New("invalid vault token")
+			return errors.New("invalid vault token")
 		}
 
 		// authenticate with token
@@ -129,23 +141,22 @@ func NewVaultClient(source concourse.Source) (*vault.Client, error) {
 		awsAuth, err := auth.NewAWSAuth(roleLoginOption, mountLoginOption)
 		if err != nil {
 			log.Print("unable to initialize Vault AWS IAM authentication")
-			return nil, err
+			return err
 		}
 
 		// utilize aws authentication with vault client
 		authInfo, err := client.Auth().Login(context.Background(), awsAuth)
 		if err != nil {
 			log.Print("unable to authenticate to Vault via AWS IAM auth method")
-			return nil, err
+			return err
 		}
 		if authInfo == nil {
-			return nil, errors.New("no auth info was returned after login")
+			return errors.New("no auth info was returned after login")
 		}
 	default:
 		log.Printf("%s was input as an authentication engine, but only token and aws are supported", engine)
-		return nil, errors.New("invalid Vault authentication engine")
+		return errors.New("invalid Vault authentication engine")
 	}
 
-	// return authenticated vault client
-	return client, nil
+	return nil
 }
