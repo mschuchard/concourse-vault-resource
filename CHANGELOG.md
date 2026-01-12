@@ -1,3 +1,6 @@
+### 1.3.0 (Next)
+- Support Vault Kubernetes authentication method.
+
 ### 1.2.4
 - Minor code optimization.
 - Explicitly marshal Concourse metadata values as Strings.

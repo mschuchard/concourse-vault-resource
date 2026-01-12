@@ -10,6 +10,8 @@ import (
 
 	vault "github.com/hashicorp/vault/api"
 	auth "github.com/hashicorp/vault/api/auth/aws"
+	"github.com/hashicorp/vault/api/auth/kubernetes"
+
 	"github.com/mschuchard/concourse-vault-resource/concourse"
 	"github.com/mschuchard/concourse-vault-resource/enum"
 )
@@ -81,6 +83,8 @@ func authClient(source concourse.Source, client *vault.Client) error {
 	token := source.Token
 	awsMountPath := source.AWSMountPath
 	awsRole := source.AWSVaultRole
+	kubeMountPath := source.KubernetesMountPath
+	kubeVaultRole := source.KubernetesVaultRole
 	engine, err := source.AuthEngine.New()
 
 	// determine vault auth engine if unspecified
@@ -116,6 +120,37 @@ func authClient(source concourse.Source, client *vault.Client) error {
 
 		// authenticate with token
 		client.SetToken(token)
+	case enum.KubernetesSA:
+		// default kubernetes mount path
+		if len(kubeMountPath) == 0 {
+			log.Print("using default Kubernetes authentication mount path at 'kubernetes'")
+			kubeMountPath = "kubernetes"
+		}
+
+		// validate kubernetes vault role
+		if len(kubeVaultRole) == 0 {
+			log.Print("a Kubernetes Vault role must be specified for the Kubernetes authentication method")
+			return errors.New("no kubernetes vault role specified")
+		}
+
+		// authenticate with kubernetes service account
+		kubeAuth, err := kubernetes.NewKubernetesAuth(
+			kubeVaultRole,
+			kubernetes.WithMountPath(kubeMountPath),
+		)
+		if err != nil {
+			log.Print(err)
+			return errors.New("unable to initialize Kubernetes service account authentication")
+		}
+
+		authInfo, err := client.Auth().Login(context.Background(), kubeAuth)
+		if err != nil {
+			log.Print(err)
+			return errors.New("unable to authenticate to VAult via Kubernetes service account method")
+		}
+		if authInfo == nil {
+			return errors.New("no auth info was returned after login")
+		}
 	case enum.AWSIAM:
 		// default aws mount path
 		if len(awsMountPath) == 0 {
