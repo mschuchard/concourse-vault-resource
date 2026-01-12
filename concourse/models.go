@@ -20,13 +20,15 @@ type checkRequest struct {
 type checkResponse []Version
 
 type Source struct {
-	AuthEngine   enum.AuthEngine `json:"auth_engine,omitempty"`
-	Address      string          `json:"address,omitempty"`
-	AWSMountPath string          `json:"aws_mount_path,omitempty"`
-	AWSVaultRole string          `json:"aws_vault_role,omitempty"`
-	Token        string          `json:"token,omitempty"`
-	Insecure     bool            `json:"insecure"`
-	Secret       SecretSource    `json:"secret"`
+	AuthEngine          enum.AuthEngine `json:"auth_engine,omitempty"`
+	Address             string          `json:"address,omitempty"`
+	AWSMountPath        string          `json:"aws_mount_path,omitempty"`
+	AWSVaultRole        string          `json:"aws_vault_role,omitempty"`
+	KubernetesMountPath string          `json:"kubernetes_mount_path,omitempty"`
+	KubernetesVaultRole string          `json:"kubernetes_vault_role,omitempty"`
+	Token               string          `json:"token,omitempty"`
+	Insecure            bool            `json:"insecure"`
+	Secret              SecretSource    `json:"secret"`
 }
 
 type SecretSource struct {
