@@ -5,17 +5,25 @@ import (
 	"testing"
 
 	"github.com/mschuchard/concourse-vault-resource/concourse"
+	"github.com/mschuchard/concourse-vault-resource/enum"
 	"github.com/mschuchard/concourse-vault-resource/vault/util"
 )
 
 var (
 	basicSourceConfig = concourse.Source{
-		Address: util.VaultAddress,
-		Token:   util.VaultToken,
+		Address:    util.VaultAddress,
+		AuthEngine: enum.VaultToken,
+		Token:      util.VaultToken,
 	}
 	awsSourceConfig = concourse.Source{
 		Address:      util.VaultAddress,
+		AuthEngine:   enum.AWSIAM,
 		AWSVaultRole: "myIAMRole",
+	}
+	kubeSourceConfig = concourse.Source{
+		Address:             util.VaultAddress,
+		AuthEngine:          enum.KubernetesSA,
+		KubernetesVaultRole: "mySARole",
 	}
 )
 
@@ -57,6 +65,11 @@ func TestAuthClient(test *testing.T) {
 		test.Errorf("expected error (contains): NoCredentialProviders: no valid providers in chain, actual: %v", err)
 	}
 
+	if err := authClient(kubeSourceConfig, util.VaultClient); err == nil || !strings.Contains(err.Error(), "error reading service account token from default location") {
+		test.Error("authenticating a vault client with kubernetes did not error in the expected manner")
+		test.Errorf("expected error (contains): error reading service account token from default location, actual: %v", err)
+	}
+
 	// test errors
 	invalidAuth := concourse.Source{AuthEngine: "does not exist"}
 	if err := authClient(invalidAuth, util.VaultClient); err == nil || err.Error() != "invalid authengine enum" {
@@ -66,6 +79,11 @@ func TestAuthClient(test *testing.T) {
 	invalidToken := concourse.Source{Token: "foobarbaz123!"}
 	if err := authClient(invalidToken, util.VaultClient); err == nil || err.Error() != "invalid vault token" {
 		test.Errorf("expected error: invalid vault token, actual: %s", err)
+	}
+
+	kubeSourceConfig.KubernetesVaultRole = ""
+	if err := authClient(kubeSourceConfig, util.VaultClient); err == nil || err.Error() != "no kubernetes vault role specified" {
+		test.Errorf("expected error: no kubernetes vault role specified, actual: %s", err)
 	}
 
 	ambiguousAuth := concourse.Source{
