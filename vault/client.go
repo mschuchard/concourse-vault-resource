@@ -98,9 +98,15 @@ func authClient(source concourse.Source, client *vault.Client) error {
 			log.Print("intended authentication engine could not be determined from other parameters")
 			return errors.New("unable to deduce authentication engine")
 		}
+		// attempt to deduce engine from other input parameters
 		if len(token) == 0 {
-			log.Print("AWS IAM authentication will be utilized with the Vault client")
-			engine = enum.AWSIAM
+			if len(kubeVaultRole) > 0 {
+				log.Print("Kubernetes service account authentication will be utilized with the Vault client")
+				engine = enum.KubernetesSA
+			} else {
+				log.Print("AWS IAM authentication will be utilized with the Vault client")
+				engine = enum.AWSIAM
+			}
 		} else {
 			log.Print("token authentication will be utilized with the Vault client")
 			engine = enum.VaultToken
@@ -127,7 +133,7 @@ func authClient(source concourse.Source, client *vault.Client) error {
 			kubeMountPath = "kubernetes"
 		}
 
-		// validate kubernetes vault role
+		// validate kubernetes vault role input
 		if len(kubeVaultRole) == 0 {
 			log.Print("a Kubernetes Vault role must be specified for the Kubernetes authentication method")
 			return errors.New("no kubernetes vault role specified")
@@ -139,14 +145,14 @@ func authClient(source concourse.Source, client *vault.Client) error {
 			kubernetes.WithMountPath(kubeMountPath),
 		)
 		if err != nil {
-			log.Print(err)
-			return errors.New("unable to initialize Kubernetes service account authentication")
+			log.Print("unable to initialize Kubernetes service account authentication")
+			return err
 		}
 
 		authInfo, err := client.Auth().Login(context.Background(), kubeAuth)
 		if err != nil {
-			log.Print(err)
-			return errors.New("unable to authenticate to VAult via Kubernetes service account method")
+			log.Print("unable to authenticate to Vault via Kubernetes service account method")
+			return err
 		}
 		if authInfo == nil {
 			return errors.New("no auth info was returned after login")
