@@ -16,14 +16,14 @@ var (
 		Token:      util.VaultToken,
 	}
 	awsSourceConfig = concourse.Source{
-		Address:      util.VaultAddress,
-		AuthEngine:   enum.AWSIAM,
-		AWSVaultRole: "myIAMRole",
+		Address:    util.VaultAddress,
+		AuthEngine: enum.AWSIAM,
+		VaultRole:  "myIAMRole",
 	}
 	kubeSourceConfig = concourse.Source{
-		Address:             util.VaultAddress,
-		AuthEngine:          enum.KubernetesSA,
-		KubernetesVaultRole: "mySARole",
+		Address:    util.VaultAddress,
+		AuthEngine: enum.KubernetesSA,
+		VaultRole:  "mySARole",
 	}
 )
 
@@ -59,7 +59,7 @@ func TestAuthClient(test *testing.T) {
 		test.Errorf("expected error (contains): NoCredentialProviders: no valid providers in chain, actual: %v", err)
 	}
 
-	awsSourceConfig.AWSVaultRole = ""
+	awsSourceConfig.VaultRole = ""
 	if err := authClient(awsSourceConfig, util.VaultClient); err == nil || !strings.Contains(err.Error(), "NoCredentialProviders: no valid providers in chain") {
 		test.Error("authenticating a vault client with aws did not error in the expected manner")
 		test.Errorf("expected error (contains): NoCredentialProviders: no valid providers in chain, actual: %v", err)
@@ -81,7 +81,7 @@ func TestAuthClient(test *testing.T) {
 		test.Errorf("expected error: invalid vault token, actual: %s", err)
 	}
 
-	kubeSourceConfig.KubernetesVaultRole = ""
+	kubeSourceConfig.VaultRole = ""
 	if err := authClient(kubeSourceConfig, util.VaultClient); err == nil || err.Error() != "no kubernetes vault role specified" {
 		test.Errorf("expected error: no kubernetes vault role specified, actual: %s", err)
 	}

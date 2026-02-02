@@ -81,10 +81,8 @@ func NewVaultClient(source concourse.Source) (*vault.Client, error) {
 func authClient(source concourse.Source, client *vault.Client) error {
 	// initialize locals
 	token := source.Token
-	awsMountPath := source.AWSMountPath
-	awsRole := source.AWSVaultRole
-	kubeMountPath := source.KubernetesMountPath
-	kubeVaultRole := source.KubernetesVaultRole
+	authMount := source.AuthMount
+	vaultRole := source.VaultRole
 	engine, err := source.AuthEngine.New()
 	if err != nil {
 		return err
@@ -103,21 +101,21 @@ func authClient(source concourse.Source, client *vault.Client) error {
 		client.SetToken(token)
 	case enum.KubernetesSA:
 		// default kubernetes mount path
-		if len(kubeMountPath) == 0 {
+		if len(authMount) == 0 {
 			log.Print("using default Kubernetes authentication mount path at 'kubernetes'")
-			kubeMountPath = "kubernetes"
+			authMount = "kubernetes"
 		}
 
 		// validate kubernetes vault role input
-		if len(kubeVaultRole) == 0 {
+		if len(vaultRole) == 0 {
 			log.Print("a Kubernetes Vault role must be specified for the Kubernetes authentication method")
 			return errors.New("no kubernetes vault role specified")
 		}
 
 		// authenticate with kubernetes service account
 		kubeAuth, err := kubernetes.NewKubernetesAuth(
-			kubeVaultRole,
-			kubernetes.WithMountPath(kubeMountPath),
+			vaultRole,
+			kubernetes.WithMountPath(authMount),
 		)
 		if err != nil {
 			log.Print("unable to initialize Kubernetes service account authentication")
@@ -134,19 +132,19 @@ func authClient(source concourse.Source, client *vault.Client) error {
 		}
 	case enum.AWSIAM:
 		// default aws mount path
-		if len(awsMountPath) == 0 {
+		if len(authMount) == 0 {
 			log.Print("using default AWS authentication mount path at 'aws'")
-			awsMountPath = "aws"
+			authMount = "aws"
 		}
-		mountLoginOption := auth.WithMountPath(awsMountPath)
+		mountLoginOption := auth.WithMountPath(authMount)
 
 		// determine iam role login option
 		var roleLoginOption auth.LoginOption
 
-		if len(awsRole) > 0 {
+		if len(vaultRole) > 0 {
 			// use explicitly specified aws role
-			log.Printf("using Vault AWS role %s for authentication", awsRole)
-			roleLoginOption = auth.WithRole(awsRole)
+			log.Printf("using Vault AWS role %s for authentication", vaultRole)
+			roleLoginOption = auth.WithRole(vaultRole)
 		} else {
 			// use default aws iam role (i.e. instance profile)
 			log.Print("using Vault role in utilized AWS authentication engine with the same name as the currently utilized AWS IAM Role")
