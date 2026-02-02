@@ -86,32 +86,7 @@ func authClient(source concourse.Source, client *vault.Client) error {
 	kubeMountPath := source.KubernetesMountPath
 	kubeVaultRole := source.KubernetesVaultRole
 	engine, err := source.AuthEngine.New()
-
-	// determine vault auth engine if unspecified
-	if len(source.AuthEngine) == 0 {
-		log.Print("authentication engine for Vault not specified, or specified but unsupported")
-		log.Print("using logic from other input parameters to assist with determination")
-
-		// validate inputs specified for only one engine
-		if len(token) > 0 && (len(awsMountPath) > 0 || len(awsRole) > 0) {
-			log.Print("token and AWS mount path or AWS role were simultaneously specified; these are mutually exclusive options")
-			log.Print("intended authentication engine could not be determined from other parameters")
-			return errors.New("unable to deduce authentication engine")
-		}
-		// attempt to deduce engine from other input parameters
-		if len(token) == 0 {
-			if len(kubeVaultRole) > 0 {
-				log.Print("Kubernetes service account authentication will be utilized with the Vault client")
-				engine = enum.KubernetesSA
-			} else {
-				log.Print("AWS IAM authentication will be utilized with the Vault client")
-				engine = enum.AWSIAM
-			}
-		} else {
-			log.Print("token authentication will be utilized with the Vault client")
-			engine = enum.VaultToken
-		}
-	} else if err != nil { // return error if invalid engine was specified
+	if err != nil {
 		return err
 	}
 

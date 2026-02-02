@@ -1,5 +1,6 @@
 ### 1.3.0 (Next)
 - Support Vault Kubernetes authentication method.
+- `auth_engine` source parameter now required and not optional.
 
 ### 1.2.4
 - Minor code optimization.

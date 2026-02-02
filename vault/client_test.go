@@ -85,12 +85,4 @@ func TestAuthClient(test *testing.T) {
 	if err := authClient(kubeSourceConfig, util.VaultClient); err == nil || err.Error() != "no kubernetes vault role specified" {
 		test.Errorf("expected error: no kubernetes vault role specified, actual: %s", err)
 	}
-
-	ambiguousAuth := concourse.Source{
-		Token:        util.VaultToken,
-		AWSMountPath: "gcp",
-	}
-	if err := authClient(ambiguousAuth, util.VaultClient); err == nil || err.Error() != "unable to deduce authentication engine" {
-		test.Errorf("expected error: unable to deduce authentication engine, actual: %s", err)
-	}
 }
