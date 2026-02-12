@@ -1,6 +1,6 @@
 module github.com/mschuchard/concourse-vault-resource
 
-go 1.24
+go 1.25
 
 require (
 	github.com/hashicorp/vault/api v1.22.0
