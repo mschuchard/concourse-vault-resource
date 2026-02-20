@@ -8,7 +8,9 @@
       "engine": "kv2",
       "mount": "secret",
       "path": "foo/bar"
-    }
+    },
+    "vault_role": "myrole",
+    "auth_mount": "placeholder"
   },
   "version": {
     "version": "1"
