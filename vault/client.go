@@ -168,7 +168,7 @@ func authClient(source concourse.Source, client *vault.Client) error {
 			return errors.New("no auth info was returned after login")
 		}
 	default:
-		log.Printf("%s was input as an authentication engine, but only token and aws are supported", engine)
+		log.Printf("%s was input as the authentication engine, but it is not currently supported", engine)
 		return errors.New("invalid Vault authentication engine")
 	}
 

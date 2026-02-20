@@ -76,7 +76,7 @@ func TestAuthClient(test *testing.T) {
 		test.Errorf("expected error: invalid authengine enum, actual: %s", err)
 	}
 
-	invalidToken := concourse.Source{Token: "foobarbaz123!"}
+	invalidToken := concourse.Source{AuthEngine: enum.VaultToken, Token: "foobarbaz123!"}
 	if err := authClient(invalidToken, util.VaultClient); err == nil || err.Error() != "invalid vault token" {
 		test.Errorf("expected error: invalid vault token, actual: %s", err)
 	}
