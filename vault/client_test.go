@@ -25,6 +25,12 @@ var (
 		AuthEngine: enum.KubernetesSA,
 		VaultRole:  "mySARole",
 	}
+	approleSourceConfig = concourse.Source{
+		Address:    util.VaultAddress,
+		AuthEngine: enum.AppRole,
+		VaultRole:  "myAppRole",
+		SecretID:   "mySecretID",
+	}
 )
 
 // test client constructor
@@ -70,6 +76,11 @@ func TestAuthClient(test *testing.T) {
 		test.Errorf("expected error (contains): error reading service account token from default location, actual: %v", err)
 	}
 
+	if err := authClient(approleSourceConfig, util.VaultClient); err == nil || !strings.Contains(err.Error(), "no handler for route \"auth/approle/login\". route entry not found") {
+		test.Error("authenticating a vault client with approle did not error in the expected manner")
+		test.Errorf("expected error (contains): unable to authenticate to Vault via AppRole method, actual: %v", err)
+	}
+
 	// test errors
 	invalidAuth := concourse.Source{AuthEngine: "does not exist"}
 	if err := authClient(invalidAuth, util.VaultClient); err == nil || err.Error() != "invalid authengine enum" {
@@ -84,5 +95,10 @@ func TestAuthClient(test *testing.T) {
 	kubeSourceConfig.VaultRole = ""
 	if err := authClient(kubeSourceConfig, util.VaultClient); err == nil || err.Error() != "no kubernetes vault role specified" {
 		test.Errorf("expected error: no kubernetes vault role specified, actual: %s", err)
+	}
+
+	approleSourceConfig.VaultRole = ""
+	if err := authClient(approleSourceConfig, util.VaultClient); err == nil || err.Error() != "approle credentials absent" {
+		test.Errorf("expected error: approle credentials absent, actual: %s", err)
 	}
 }
