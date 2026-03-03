@@ -4,6 +4,7 @@ go 1.25
 
 require (
 	github.com/hashicorp/vault/api v1.22.0
+	github.com/hashicorp/vault/api/auth/approle v0.11.0
 	github.com/hashicorp/vault/api/auth/aws v0.11.0
 	github.com/hashicorp/vault/api/auth/kubernetes v0.10.0
 )

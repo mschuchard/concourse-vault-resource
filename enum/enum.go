@@ -10,12 +10,13 @@ import (
 type AuthEngine string
 
 const (
+	AppRole      AuthEngine = "approle"
 	AWSIAM       AuthEngine = "aws"
 	KubernetesSA AuthEngine = "kubernetes"
 	VaultToken   AuthEngine = "token"
 )
 
-var authEngines []AuthEngine = []AuthEngine{AWSIAM, KubernetesSA, VaultToken}
+var authEngines []AuthEngine = []AuthEngine{AppRole, AWSIAM, KubernetesSA, VaultToken}
 
 // authengine type conversion
 func (a AuthEngine) New() (AuthEngine, error) {

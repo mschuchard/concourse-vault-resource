@@ -25,6 +25,7 @@ type Source struct {
 	Insecure   bool            `json:"insecure,omitempty"`
 	AuthMount  string          `json:"auth_mount,omitempty"`
 	VaultRole  string          `json:"vault_role,omitempty"`
+	SecretID   string          `json:"secret_id,omitempty"`
 	Token      string          `json:"token,omitempty"`
 	Secret     SecretSource    `json:"secret"`
 }
