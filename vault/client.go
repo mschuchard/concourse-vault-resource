@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	vault "github.com/hashicorp/vault/api"
+	"github.com/hashicorp/vault/api/auth/approle"
 	auth "github.com/hashicorp/vault/api/auth/aws"
 	"github.com/hashicorp/vault/api/auth/kubernetes"
 
@@ -162,6 +163,39 @@ func authClient(source concourse.Source, client *vault.Client) error {
 		authInfo, err := client.Auth().Login(context.Background(), awsAuth)
 		if err != nil {
 			log.Print("unable to authenticate to Vault via AWS IAM auth method")
+			return err
+		}
+		if authInfo == nil {
+			return errors.New("no auth info was returned after login")
+		}
+	case enum.AppRole:
+		// default approle mount path
+		if len(authMount) == 0 {
+			log.Print("using default AppRole authentication mount path at 'approle'")
+			authMount = "approle"
+		}
+
+		// validate role_id and secret_id are provided
+		if len(source.VaultRole) == 0 || len(source.SecretID) == 0 {
+			log.Print("both vault_role and secret_id must be specified for AppRole authentication")
+			return errors.New("approle credentials absent")
+		}
+
+		// authenticate with approle
+		appRoleAuth, err := approle.NewAppRoleAuth(
+			source.VaultRole,
+			&approle.SecretID{FromString: source.SecretID},
+			approle.WithMountPath(authMount),
+		)
+		if err != nil {
+			log.Print("unable to initialize AppRole authentication")
+			return err
+		}
+
+		// authenticate with vault approle
+		authInfo, err := client.Auth().Login(context.Background(), appRoleAuth)
+		if err != nil {
+			log.Print("unable to authenticate to Vault via AppRole method")
 			return err
 		}
 		if authInfo == nil {
