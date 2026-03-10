@@ -53,11 +53,6 @@ func TestNewVaultClient(test *testing.T) {
 
 // test client auth
 func TestAuthClient(test *testing.T) {
-	if err := authClient(basicSourceConfig, util.VaultClient); err != nil {
-		test.Error("authenticating a vault client with a basic token config errored")
-		test.Error(err)
-	}
-
 	if err := authClient(awsSourceConfig, util.VaultClient); err == nil || !strings.Contains(err.Error(), "NoCredentialProviders: no valid providers in chain") {
 		test.Error("authenticating a vault client with aws did not error in the expected manner")
 		test.Errorf("expected error (contains): NoCredentialProviders: no valid providers in chain, actual: %v", err)
@@ -90,6 +85,12 @@ func TestAuthClient(test *testing.T) {
 
 	if err := authClient(approleSourceConfig, util.VaultClient); err != nil {
 		test.Error("authenticating a vault client with approle config errored")
+		test.Error(err)
+	}
+
+	// this needs to be last to ensure the client is authenticated with a root token for all other tests
+	if err := authClient(basicSourceConfig, util.VaultClient); err != nil {
+		test.Error("authenticating a vault client with a basic token config errored")
 		test.Error(err)
 	}
 
