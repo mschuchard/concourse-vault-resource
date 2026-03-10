@@ -28,8 +28,6 @@ var (
 	approleSourceConfig = concourse.Source{
 		Address:    util.VaultAddress,
 		AuthEngine: enum.AppRole,
-		VaultRole:  "myAppRole",
-		SecretID:   "mySecretID",
 	}
 )
 
@@ -76,9 +74,23 @@ func TestAuthClient(test *testing.T) {
 		test.Errorf("expected error (contains): error reading service account token from default location, actual: %v", err)
 	}
 
-	if err := authClient(approleSourceConfig, util.VaultClient); err == nil || !strings.Contains(err.Error(), "no handler for route \"auth/approle/login\". route entry not found") {
-		test.Error("authenticating a vault client with approle did not error in the expected manner")
-		test.Errorf("expected error (contains): unable to authenticate to Vault via AppRole method, actual: %v", err)
+	// retrieve role id and secret id for testing approle auth
+	roleID, err := util.VaultClient.Logical().Read("auth/approle/role/myAppRole/role-id")
+	if err != nil {
+		test.Error("failed to retrieve role ID for approle auth")
+		test.Error(err)
+	}
+	secretID, err := util.VaultClient.Logical().Write("auth/approle/role/myAppRole/secret-id", nil)
+	if err != nil {
+		test.Error("failed to retrieve secret ID for approle auth")
+		test.Error(err)
+	}
+	approleSourceConfig.VaultRole = roleID.Data["role_id"].(string)
+	approleSourceConfig.SecretID = secretID.Data["secret_id"].(string)
+
+	if err := authClient(approleSourceConfig, util.VaultClient); err != nil {
+		test.Error("authenticating a vault client with approle config errored")
+		test.Error(err)
 	}
 
 	// test errors

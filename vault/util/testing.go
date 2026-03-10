@@ -15,6 +15,8 @@ const (
 
 var (
 	VaultClient = basicVaultClient()
+	RoleID = ""
+	SecretID = ""
 )
 
 // helper for basic vault client
