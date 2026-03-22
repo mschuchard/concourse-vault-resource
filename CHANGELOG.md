@@ -1,4 +1,4 @@
-### 1.3.0 (Next)
+### 1.3.0
 - Support Vault Kubernetes authentication method.
 - Support Vault AppRole authentication method.
 - `auth_engine` source parameter now required and not optional.

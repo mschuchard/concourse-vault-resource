@@ -11,13 +11,19 @@ This repository and project is based on the work performed for [MITODL](https://
 ### `source`: designates the Vault server and authentication engine information
 
 **parameters**
-- `auth_engine`: _optional_ The authentication engine for use with Vault. Allowed values are `aws` or `token`. If unspecified will default to `aws` with no `token` parameter specified, or `token` if `token` parameter is specified.
+- `auth_engine`: _required_ The authentication engine for use with Vault. Allowed values are `approle`, `aws`, `kubernetes`, or `token`.
 
 - `address`: _optional_ The address for the Vault server in format of `URL:PORT`. default: `http://127.0.0.1:8200`
 
-- `aws_mount_path`: _optional_ The mount path for the AWS authentication engine. Parameter is ignored if authentication engine is not `aws`. default: `aws`
+- `auth_mount`: _optional_ The mount path for the authentication engine. Parameter is ignored if the authentication engine is `token`. default: same value as `auth_engine`
 
-- `aws_vault_role`: _optional_ The Vault role for the AWS authentication login to Vault. Parameter is ignored if authentication engine is not `aws`. default: (Vault role in utilized AWS authentication engine with the same name as the current utilized AWS IAM Role)
+- `vault_role`: _optional_ The Vault role for the authentication login to Vault. Parameter is ignored if the authentication engine is `token`. Note that this is indeed equivalent to the Vault `role_id` for the `approle` method. Relying on any of the default values for this parameter is generally not recommended unless utilizing AWS IAM instance roles where Concourse agents exist. defaults:
+- - approle: Vault attempts to deduce this based on the implied role name associated with it
+- - aws: Vault role in utilized AWS authentication engine with the same name as the current utilized AWS IAM Role
+- - kubernetes: Vault role associated with Kubernetes service account with the default token location
+
+
+- `secret_id`: _optional_ The secret id for the `approle` push authenticaion method. Parameter is ignored if the authentication engine is anything other than `approle`. default: empty string
 
 - `token`: _optional_ The token for the token authentication engine. Required if `auth_engine` parameter is `token`. default: empty string
 
@@ -162,7 +168,7 @@ resource_types:
 - name: vault
   type: docker-image
   source:
-    repository: matthewschuchard/concourse-vault-resource:1.2
+    repository: matthewschuchard/concourse-vault-resource:1.3
     tag: latest
 
 resources:
@@ -175,6 +181,7 @@ resources:
   type: vault
   source:
     address: https://mitodl.vault.com:8200
+    auth_engine: token
     token: abcdefghijklmnopqrstuvwxyz09
     secret:
       engine: kv2
@@ -186,6 +193,7 @@ resources:
   type: vault
   source:
     address: https://mitodl.vault.com:8200
+    auth_engine: token
     token: abcdefghijklmnopqrstuvwxyz09
     secret:
       engine: database
