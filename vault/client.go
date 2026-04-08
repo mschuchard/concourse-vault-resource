@@ -84,6 +84,7 @@ func authClient(source concourse.Source, client *vault.Client) error {
 	token := source.Token
 	authMount := source.AuthMount
 	vaultRole := source.VaultRole
+	secretID := source.SecretID
 	engine, err := source.AuthEngine.New()
 	if err != nil {
 		return err
@@ -92,6 +93,12 @@ func authClient(source concourse.Source, client *vault.Client) error {
 	// determine vault authentication method
 	switch engine {
 	case enum.VaultToken:
+		// warn if ignored parameters were specified
+		if len(authMount) > 0 || len(vaultRole) > 0 || len(secretID) > 0 {
+			log.Print("ignored parameters were specified for Vault token authentication method")
+			log.Print("auth_mount, vault_role, and secret_id parameters are all ignored for Vault token authentication")
+		}
+
 		// validate vault token
 		if matched, _ := regexp.MatchString(`^[a-zA-Z0-9.]+$`, token); !matched {
 			log.Print("the specified Vault Token is invalid")
@@ -101,6 +108,11 @@ func authClient(source concourse.Source, client *vault.Client) error {
 		// authenticate with token
 		client.SetToken(token)
 	case enum.KubernetesSA:
+		// warn if token specified
+		if len(token) > 0 {
+			log.Print("a token was specified, but will be ignored for Kubernetes service account authentication")
+		}
+
 		// default kubernetes mount path
 		if len(authMount) == 0 {
 			log.Print("using default Kubernetes authentication mount path at 'kubernetes'")
@@ -132,6 +144,11 @@ func authClient(source concourse.Source, client *vault.Client) error {
 			return errors.New("no auth info was returned after login")
 		}
 	case enum.AWSIAM:
+		// warn if token specified
+		if len(token) > 0 {
+			log.Print("a token was specified, but will be ignored for AWS IAM authentication")
+		}
+
 		// default aws mount path
 		if len(authMount) == 0 {
 			log.Print("using default AWS authentication mount path at 'aws'")
@@ -169,6 +186,11 @@ func authClient(source concourse.Source, client *vault.Client) error {
 			return errors.New("no auth info was returned after login")
 		}
 	case enum.AppRole:
+		// warn if token specified
+		if len(token) > 0 {
+			log.Print("a token was specified, but will be ignored for AppRole authentication")
+		}
+
 		// default approle mount path
 		if len(authMount) == 0 {
 			log.Print("using default AppRole authentication mount path at 'approle'")
@@ -176,7 +198,7 @@ func authClient(source concourse.Source, client *vault.Client) error {
 		}
 
 		// validate role_id and secret_id are provided
-		if len(source.VaultRole) == 0 || len(source.SecretID) == 0 {
+		if len(source.VaultRole) == 0 || len(secretID) == 0 {
 			log.Print("both vault_role and secret_id must be specified for AppRole authentication")
 			return errors.New("approle credentials absent")
 		}
@@ -184,7 +206,7 @@ func authClient(source concourse.Source, client *vault.Client) error {
 		// authenticate with approle
 		appRoleAuth, err := approle.NewAppRoleAuth(
 			source.VaultRole,
-			&approle.SecretID{FromString: source.SecretID},
+			&approle.SecretID{FromString: secretID},
 			approle.WithMountPath(authMount),
 		)
 		if err != nil {
