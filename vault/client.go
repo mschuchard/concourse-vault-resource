@@ -192,7 +192,7 @@ func checkAuthParams(mount string, token string, engine enum.AuthEngine) string 
 		log.Print("a token was specified, but will be ignored for Kubernetes service account authentication")
 	}
 
-	// default kubernetes mount path
+	// default authentication method mount path
 	if len(mount) == 0 {
 		log.Printf("using default %s authentication mount path at '%s'", engine, engine)
 		mount = string(engine)

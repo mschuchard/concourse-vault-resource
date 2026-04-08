@@ -115,3 +115,19 @@ func TestAuthClient(test *testing.T) {
 		test.Errorf("expected error: approle credentials absent, actual: %s", err)
 	}
 }
+
+// test default mount
+func TestCheckAuthParams(test *testing.T) {
+	if mount := checkAuthParams("", "", enum.KubernetesSA); mount != "kubernetes" {
+		test.Errorf("expected default mount: kubernetes, actual: %s", mount)
+	}
+
+	if mount := checkAuthParams("gcp", "", enum.AWSIAM); mount != "gcp" {
+		test.Errorf("expected mount input param: gcp, actual: %s", mount)
+	}
+}
+
+// test vault authenticate with authentication method
+func TestLoginWithMethod(test *testing.T) {
+	// for now this is encapsulated by TestAuthClient, but in the future it may be useful to here also
+}
