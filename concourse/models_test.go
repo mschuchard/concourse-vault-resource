@@ -28,7 +28,7 @@ func TestCheckRequest(test *testing.T) {
 	source := checkRequest.Source
 	expectedSecretSource := SecretSource{Engine: "kv2", Mount: "secret", Path: "foo/bar"}
 
-	if checkRequest.Version != version || source.AuthEngine != "token" || source.Address != "http://localhost:8200" || !source.Insecure || source.Token != "abcdefghijklmnopqrstuvwxyz09" || source.VaultRole != "myrole" || source.AuthMount != "placeholder" || source.Secret != expectedSecretSource {
+	if checkRequest.Version != version || source.AuthEngine != "token" || source.Address != "http://localhost:8200" || !source.Insecure || source.Token != "abcdefghijklmnopqrstuvwxyz09" || source.VaultRole != "myrole" || source.AuthMount != "placeholder" || source.SecretID != "abcd-1234-5678-efgh-ijklmnop" || source.Secret != expectedSecretSource {
 		test.Error("check request constructor returned unexpected values")
 		test.Errorf("expected Version field to be %v, actual: %v", version, checkRequest.Version)
 		test.Errorf("expected Source Auth Engine field to be: token, actual: %s", source.AuthEngine)
@@ -37,6 +37,7 @@ func TestCheckRequest(test *testing.T) {
 		test.Errorf("expected Source Token field to be: abcdefghijklmnopqrstuvwxyz09, actual: %s", source.Token)
 		test.Errorf("expected Source Vault Role field to be: myrole, actual: %s", source.VaultRole)
 		test.Errorf("expected Source Auth Mount field to be: placeholder, actual: %s", source.AuthMount)
+		test.Errorf("expected Secret ID field to be: abcd-1234-5678-efgh-ijklmnop, actual: %s", source.SecretID)
 		test.Errorf("expected Source Secret field to be: %v, actual: %v", expectedSecretSource, source.Secret)
 	}
 
