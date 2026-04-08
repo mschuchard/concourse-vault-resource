@@ -10,7 +10,7 @@ import (
 
 	vault "github.com/hashicorp/vault/api"
 	"github.com/hashicorp/vault/api/auth/approle"
-	auth "github.com/hashicorp/vault/api/auth/aws"
+	"github.com/hashicorp/vault/api/auth/aws"
 	"github.com/hashicorp/vault/api/auth/kubernetes"
 
 	"github.com/mschuchard/concourse-vault-resource/concourse"
@@ -108,16 +108,8 @@ func authClient(source concourse.Source, client *vault.Client) error {
 		// authenticate with token
 		client.SetToken(token)
 	case enum.KubernetesSA:
-		// warn if token specified
-		if len(token) > 0 {
-			log.Print("a token was specified, but will be ignored for Kubernetes service account authentication")
-		}
-
-		// default kubernetes mount path
-		if len(authMount) == 0 {
-			log.Print("using default Kubernetes authentication mount path at 'kubernetes'")
-			authMount = "kubernetes"
-		}
+		// assign default auth amount if necessary and validate parameters
+		authMount = checkAuthParams(authMount, token, engine)
 
 		// validate kubernetes vault role input
 		if len(vaultRole) == 0 {
@@ -135,67 +127,36 @@ func authClient(source concourse.Source, client *vault.Client) error {
 			return err
 		}
 
-		authInfo, err := client.Auth().Login(context.Background(), kubeAuth)
-		if err != nil {
-			log.Print("unable to authenticate to Vault via Kubernetes service account method")
-			return err
-		}
-		if authInfo == nil {
-			return errors.New("no auth info was returned after login")
-		}
+		err = loginWithMethod(client, kubeAuth, engine)
 	case enum.AWSIAM:
-		// warn if token specified
-		if len(token) > 0 {
-			log.Print("a token was specified, but will be ignored for AWS IAM authentication")
-		}
-
-		// default aws mount path
-		if len(authMount) == 0 {
-			log.Print("using default AWS authentication mount path at 'aws'")
-			authMount = "aws"
-		}
-		mountLoginOption := auth.WithMountPath(authMount)
+		// assign default auth amount if necessary and validate parameters
+		authMount = checkAuthParams(authMount, token, engine)
 
 		// determine iam role login option
-		var roleLoginOption auth.LoginOption
+		var roleLoginOption aws.LoginOption
 
 		if len(vaultRole) > 0 {
 			// use explicitly specified aws role
 			log.Printf("using Vault AWS role %s for authentication", vaultRole)
-			roleLoginOption = auth.WithRole(vaultRole)
+			roleLoginOption = aws.WithRole(vaultRole)
 		} else {
 			// use default aws iam role (i.e. instance profile)
 			log.Print("using Vault role in utilized AWS authentication engine with the same name as the currently utilized AWS IAM Role")
-			roleLoginOption = auth.WithIAMAuth()
+			roleLoginOption = aws.WithIAMAuth()
 		}
 
 		// authenticate with aws iam
-		awsAuth, err := auth.NewAWSAuth(roleLoginOption, mountLoginOption)
+		awsAuth, err := aws.NewAWSAuth(roleLoginOption, aws.WithMountPath(authMount))
 		if err != nil {
 			log.Print("unable to initialize Vault AWS IAM authentication")
 			return err
 		}
 
 		// utilize aws authentication with vault client
-		authInfo, err := client.Auth().Login(context.Background(), awsAuth)
-		if err != nil {
-			log.Print("unable to authenticate to Vault via AWS IAM auth method")
-			return err
-		}
-		if authInfo == nil {
-			return errors.New("no auth info was returned after login")
-		}
+		err = loginWithMethod(client, awsAuth, engine)
 	case enum.AppRole:
-		// warn if token specified
-		if len(token) > 0 {
-			log.Print("a token was specified, but will be ignored for AppRole authentication")
-		}
-
-		// default approle mount path
-		if len(authMount) == 0 {
-			log.Print("using default AppRole authentication mount path at 'approle'")
-			authMount = "approle"
-		}
+		// assign default auth amount if necessary and validate parameters
+		authMount = checkAuthParams(authMount, token, engine)
 
 		// validate role_id and secret_id are provided
 		if len(source.VaultRole) == 0 || len(secretID) == 0 {
@@ -215,17 +176,41 @@ func authClient(source concourse.Source, client *vault.Client) error {
 		}
 
 		// authenticate with vault approle
-		authInfo, err := client.Auth().Login(context.Background(), appRoleAuth)
-		if err != nil {
-			log.Print("unable to authenticate to Vault via AppRole method")
-			return err
-		}
-		if authInfo == nil {
-			return errors.New("no auth info was returned after login")
-		}
+		err = loginWithMethod(client, appRoleAuth, engine)
 	default:
 		log.Printf("%s was input as the authentication engine, but it is not currently supported", engine)
 		return errors.New("invalid Vault authentication engine")
+	}
+
+	return err
+}
+
+// check authentication parameters
+func checkAuthParams(mount string, token string, engine enum.AuthEngine) string {
+	// warn if token specified
+	if len(token) > 0 {
+		log.Print("a token was specified, but will be ignored for Kubernetes service account authentication")
+	}
+
+	// default kubernetes mount path
+	if len(mount) == 0 {
+		log.Printf("using default %s authentication mount path at '%s'", engine, engine)
+		mount = string(engine)
+	}
+
+	return mount
+}
+
+// authenticate vault client with given authentication method
+func loginWithMethod(client *vault.Client, method vault.AuthMethod, engine enum.AuthEngine) error {
+	// authenticate client with provided method
+	authInfo, err := client.Auth().Login(context.Background(), method)
+	if err != nil {
+		log.Printf("unable to authenticate to Vault via %s method", engine)
+		return err
+	}
+	if authInfo == nil {
+		return errors.New("no auth info was returned after login")
 	}
 
 	return nil
