@@ -34,7 +34,7 @@ func main() {
 	secretSource := inRequest.Source.Secret
 
 	// read secrets from params
-	if secretSource == (concourse.SecretSource{}) {
+	if secretSource == nil {
 		// perform secrets operations
 		for mount, secretParams := range inRequest.Params {
 			// iterate through secret params' paths and assign each to each vault secret path

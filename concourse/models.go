@@ -27,14 +27,14 @@ type Source struct {
 	VaultRole  string          `json:"vault_role,omitempty"`
 	SecretID   string          `json:"secret_id,omitempty"`
 	Token      string          `json:"token,omitempty"`
-	Secret     SecretSource    `json:"secret"`
+	Secret     *SecretSource   `json:"secret,omitempty"`
 }
 
 type SecretSource struct {
 	Engine  enum.SecretEngine `json:"engine"`
 	Mount   string            `json:"mount"`
 	Path    string            `json:"path"`
-	LeaseId string            `json:"lease_id"`
+	LeaseId string            `json:"lease_id,omitempty"`
 }
 
 type Version struct {
@@ -129,7 +129,7 @@ func NewInRequest(pipelineJSON io.Reader) (*inRequest, error) {
 	}
 
 	// these conditionals are evaluated multiple times so assign here
-	noSourceSecret := inRequest.Source.Secret == (SecretSource{})
+	noSourceSecret := inRequest.Source.Secret == nil
 	noParamsSecret := inRequest.Params == nil
 
 	// info message for request version specified and params usage
@@ -168,7 +168,7 @@ func NewOutRequest(pipelineJSON io.Reader) (*outRequest, error) {
 		return nil, err
 	}
 	// validate
-	if outRequest.Source.Secret != (SecretSource{}) {
+	if outRequest.Source.Secret != nil {
 		log.Print("specifying a secret in source for a put step has no effect, and that value will be ignored during this step execution")
 	}
 	if outRequest.Params == nil {

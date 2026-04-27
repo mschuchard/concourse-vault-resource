@@ -127,7 +127,7 @@ func authClient(source concourse.Source, client *vault.Client) error {
 			return err
 		}
 
-		err = loginWithMethod(client, kubeAuth, engine)
+		return loginWithMethod(client, kubeAuth, engine)
 	case enum.AWSIAM:
 		// assign default auth amount if necessary and validate parameters
 		authMount = checkAuthParams(authMount, token, engine)
@@ -153,7 +153,7 @@ func authClient(source concourse.Source, client *vault.Client) error {
 		}
 
 		// utilize aws authentication with vault client
-		err = loginWithMethod(client, awsAuth, engine)
+		return loginWithMethod(client, awsAuth, engine)
 	case enum.AppRole:
 		// assign default auth amount if necessary and validate parameters
 		authMount = checkAuthParams(authMount, token, engine)
@@ -176,13 +176,13 @@ func authClient(source concourse.Source, client *vault.Client) error {
 		}
 
 		// authenticate with vault approle
-		err = loginWithMethod(client, appRoleAuth, engine)
+		return loginWithMethod(client, appRoleAuth, engine)
 	default:
 		log.Printf("%s was input as the authentication engine, but it is not currently supported", engine)
 		return errors.New("invalid Vault authentication engine")
 	}
 
-	return err
+	return nil
 }
 
 // check authentication parameters

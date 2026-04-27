@@ -21,7 +21,7 @@ func main() {
 	secretSource := checkRequest.Source.Secret
 
 	// return immediately if secret unspecified in source or is kv1
-	if secretSource == (concourse.SecretSource{}) || secretSource.Engine == "kv1" {
+	if secretSource == nil || secretSource.Engine == "kv1" {
 		// dummy check response
 		dummyResponse := concourse.NewCheckResponse([]concourse.Version{{Version: "0"}})
 		// format checkResponse into json
