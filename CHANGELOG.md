@@ -1,3 +1,6 @@
+### 1.3.1
+- Properly model nested struct fields as optional when documented as such.
+
 ### 1.3.0
 - Support Vault Kubernetes authentication method.
 - Support Vault AppRole authentication method.

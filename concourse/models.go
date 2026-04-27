@@ -13,8 +13,8 @@ import (
 // custom type structs supporting concourse models for input and outputs
 // check/source/version
 type checkRequest struct {
-	Source  Source  `json:"source"`
-	Version Version `json:"version"`
+	Source  Source   `json:"source"`
+	Version *Version `json:"version,omitempty"`
 }
 
 type checkResponse []Version
@@ -46,7 +46,7 @@ type inRequest struct {
 	// key is secret mount
 	Params  map[string]secrets `json:"params"`
 	Source  Source             `json:"source"`
-	Version Version            `json:"version"`
+	Version Version            `json:"version,omitzero"`
 }
 
 type secrets struct {
@@ -97,7 +97,7 @@ func NewCheckRequest(pipelineJSON io.Reader) (*checkRequest, error) {
 
 	// validate version not specified for kv1
 	secretSource := checkRequest.Source.Secret
-	if secretSource.Engine == enum.KeyValue1 && checkRequest.Version != (Version{}) {
+	if secretSource.Engine == enum.KeyValue1 && checkRequest.Version != nil {
 		log.Print("version cannot be specified in conjunction with a kv version 1 engine secret")
 		return nil, errors.New("secret version specified with kv1")
 	}
