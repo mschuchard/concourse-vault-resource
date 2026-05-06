@@ -193,8 +193,8 @@ resources:
   type: vault
   source:
     address: https://mitodl.vault.com:8200
-    auth_engine: token
-    token: abcdefghijklmnopqrstuvwxyz09
+    auth_engine: kubernetes
+    vault_role: concourse-k8s-sa
     secret:
       engine: database
       path: readonly

@@ -95,18 +95,21 @@ func NewCheckRequest(pipelineJSON io.Reader) (*checkRequest, error) {
 		return nil, err
 	}
 
-	// validate version not specified for kv1
-	secretSource := checkRequest.Source.Secret
-	if secretSource.Engine == enum.KeyValue1 && checkRequest.Version != nil {
-		log.Print("version cannot be specified in conjunction with a kv version 1 engine secret")
-		return nil, errors.New("secret version specified with kv1")
-	}
+	// skip validation if secretsource omitted
+	if checkRequest.Source.Secret != nil {
+		// validate version not specified for kv1
+		secretSource := checkRequest.Source.Secret
+		if secretSource.Engine == enum.KeyValue1 && checkRequest.Version != nil {
+			log.Print("version cannot be specified in conjunction with a kv version 1 engine secret")
+			return nil, errors.New("secret version specified with kv1")
+		}
 
-	// validate lease id if specified
-	if len(secretSource.LeaseId) > 0 {
-		if !leaseIDRegex.MatchString(secretSource.LeaseId) {
-			log.Printf("the specified lease id %s is invalid", secretSource.LeaseId)
-			return nil, errors.New("invalid lease id parameter")
+		// validate lease id if specified
+		if len(secretSource.LeaseId) > 0 {
+			if !leaseIDRegex.MatchString(secretSource.LeaseId) {
+				log.Printf("the specified lease id %s is invalid", secretSource.LeaseId)
+				return nil, errors.New("invalid lease id parameter")
+			}
 		}
 	}
 

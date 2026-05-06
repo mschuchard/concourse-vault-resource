@@ -1,4 +1,4 @@
-### 1.3.1
+### 1.3.1 (Next)
 - Properly model nested struct fields as optional when documented as such.
 
 ### 1.3.0

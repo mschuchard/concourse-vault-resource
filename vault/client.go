@@ -189,7 +189,7 @@ func authClient(source concourse.Source, client *vault.Client) error {
 func checkAuthParams(mount string, token string, engine enum.AuthEngine) string {
 	// warn if token specified
 	if len(token) > 0 {
-		log.Print("a token was specified, but will be ignored for Kubernetes service account authentication")
+		log.Print("a token was specified, but will be ignored for non-token method authentication")
 	}
 
 	// default authentication method mount path
