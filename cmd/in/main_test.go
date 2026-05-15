@@ -6,8 +6,7 @@ import (
 )
 
 func Example() {
-	// defer stdin close and establish workdir from args[1]
-	defer os.Stdin.Close()
+	// establish workdir from args[1]
 	os.Args[1] = "/opt/resource"
 
 	// params secrets and source secret
@@ -17,6 +16,10 @@ func Example() {
 
 		// invoke main and validate stdout
 		main()
+
+		// close file after test
+		os.Stdin.Close()
+
 		// Output: {"metadata":[{}],"version":{}}
 	}
 }
