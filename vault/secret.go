@@ -109,7 +109,8 @@ func (secret *vaultSecret) Renew(client *vault.Client, leaseIdSuffix string) (Me
 	rawSecret, err := client.Sys().Renew(leaseId, 0)
 	if err != nil {
 		log.Printf("the secret with lease ID %s could not be renewed", leaseId)
-		return Metadata{}, err
+		log.Print(err)
+		return Metadata{}, errors.New("failed to renew secret lease")
 	}
 	log.Printf("the lease for %s was successfully renewed", leaseId)
 

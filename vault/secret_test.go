@@ -63,4 +63,10 @@ func TestRenew(test *testing.T) {
 		test.Error("renew did not return expected error for non-dynamic secret")
 		test.Errorf("expected: non-renewable secret, actual: %s", err)
 	}
+
+	dynamicSecret := vaultSecret{dynamic: true, mount: "mount", path: "path"}
+	if _, err := dynamicSecret.Renew(util.VaultClient, "suffix"); err == nil || err.Error() != "failed to renew secret lease" {
+		test.Error("renew did not return expected error for failed secret renewal")
+		test.Errorf("expected: failed to renew secret lease, actual: %s", err)
+	}
 }
