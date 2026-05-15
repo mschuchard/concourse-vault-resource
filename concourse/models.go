@@ -46,7 +46,7 @@ type inRequest struct {
 	// key is secret mount
 	Params  map[string]secrets `json:"params"`
 	Source  Source             `json:"source"`
-	Version Version            `json:"version,omitzero"`
+	Version Version            `json:"version"`
 }
 
 type secrets struct {
@@ -95,6 +95,12 @@ func NewCheckRequest(pipelineJSON io.Reader) (*checkRequest, error) {
 		return nil, err
 	}
 
+	// validate required params
+	if len(checkRequest.Source.AuthEngine) == 0 {
+		log.Print("auth_engine is a required parameter")
+		return nil, errors.New("no auth engine specified")
+	}
+
 	// skip validation if secretsource omitted
 	if checkRequest.Source.Secret != nil {
 		// validate version not specified for kv1
@@ -129,6 +135,12 @@ func NewInRequest(pipelineJSON io.Reader) (*inRequest, error) {
 	if err := json.NewDecoder(pipelineJSON).Decode(&inRequest); err != nil {
 		log.Print("error decoding pipeline input from JSON")
 		return nil, err
+	}
+
+	// validate required params
+	if len(inRequest.Source.AuthEngine) == 0 {
+		log.Print("auth_engine is a required parameter")
+		return nil, errors.New("no auth engine specified")
 	}
 
 	// these conditionals are evaluated multiple times so assign here
@@ -170,7 +182,12 @@ func NewOutRequest(pipelineJSON io.Reader) (*outRequest, error) {
 		log.Print("error decoding pipeline input from JSON")
 		return nil, err
 	}
+
 	// validate
+	if len(outRequest.Source.AuthEngine) == 0 {
+		log.Print("auth_engine is a required parameter")
+		return nil, errors.New("no auth engine specified")
+	}
 	if outRequest.Source.Secret != nil {
 		log.Print("specifying a secret in source for a put step has no effect, and that value will be ignored during this step execution")
 	}

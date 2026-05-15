@@ -1,5 +1,6 @@
 ### 1.3.1 (Next)
 - Properly model nested struct fields as optional when documented as such.
+- Improve required parameter validation.
 
 ### 1.3.0
 - Support Vault Kubernetes authentication method.
