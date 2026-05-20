@@ -57,12 +57,16 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// assign input and get version and initialize versions slice
-	inputVersion, err := strconv.Atoi(checkRequest.Version.Version)
-	if err != nil {
-		log.Printf("the input version '%s' in source is not a valid integer", checkRequest.Version.Version)
-		log.Fatal(err)
+	// assign default input version, and check if version param specified
+	inputVersion := 0
+	if checkRequest.Version != nil {
+		// validate version if specified
+		if inputVersion, err = strconv.Atoi(checkRequest.Version.Version); err != nil {
+			log.Printf("the input version '%s' in source is not a valid integer", checkRequest.Version.Version)
+			log.Fatal(err)
+		}
 	}
+	// initialize versions slice and get version of secret
 	getVersionInt, err := strconv.Atoi(secretMetadata.Version)
 	versions := []concourse.Version{}
 
