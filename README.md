@@ -29,7 +29,7 @@ This repository and project is based on the work performed for [MITODL](https://
 
 - `insecure`: _optional_ Whether to utilize an insecure connection with Vault (e.g. no HTTP or HTTPS with self-signed cert). default: `false`
 
-- `secret`: _required/optional_ Required for `check` step if automatically renewing a dynamic secret/credential (this occurs when a non-KV secret is input for this value), and/or specifying an exact version of a KV2 secret (otherwise latest; see below `version` subsection). **Automatic renewal of dynamic secrets is a beta feature.** KV1 secrets are ignored due to lack of versioning support in Vault.  Mutually exclusive with `params` for `in` step, but one of the two must be specified ("exclusive or" conditional). Note this value is ignored during `out` as it is not possible for it to have any effect with that step's functionality. The following YAML schema is required for the secret specification. default: `nil`
+- `secret`: _optional_ Required for `check` step if user intent is automatically renewing a dynamic secret/credential (this occurs when a non-KV secret is input for this value), and/or specifying an exact version of a KV2 secret (otherwise latest; see below `version` subsection). **Automatic renewal of dynamic secrets is a beta feature.** KV1 secrets are ignored due to lack of versioning support in Vault.  Mutually exclusive with `params` for `in` step, but one of the two must be specified ("exclusive or" conditional). Note this value is ignored during `out` as it is not possible for it to have any effect with that step's functionality. The following YAML schema is required for the secret specification. default: `nil`
 
 ```yaml
 secret:
@@ -62,7 +62,7 @@ version:
   <mount>-<path>: <version>
 ```
 
-### `check`: returns secret versions between input version and retrieved version sequentially and inclusive
+### `check`: returns secret versions between input version and retrieved version sequentially and inclusive AND renews dynamic secrets
 
 NOTE: currently the KV1 secrets engine is unsupported due to lack of versioning
 NOTE: if the specified secret is dynamic, then the input version is ignored because the comparison is between the current time and the secret expiration time

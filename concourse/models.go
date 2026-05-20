@@ -117,6 +117,8 @@ func NewCheckRequest(pipelineJSON io.Reader) (*checkRequest, error) {
 				return nil, errors.New("invalid lease id parameter")
 			}
 		}
+	} else {
+		log.Print("secret not specified in source, and therefore no secret renewal or specific version targeting will occur")
 	}
 
 	return &checkRequest, nil

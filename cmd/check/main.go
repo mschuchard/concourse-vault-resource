@@ -63,8 +63,8 @@ func main() {
 		log.Printf("the input version '%s' in source is not a valid integer", checkRequest.Version.Version)
 		log.Fatal(err)
 	}
-	versions := []concourse.Version{}
 	getVersionInt, err := strconv.Atoi(secretMetadata.Version)
+	versions := []concourse.Version{}
 
 	// if getVersion could not be converted to int then this may be a dynamically generated credential
 	if err != nil {
