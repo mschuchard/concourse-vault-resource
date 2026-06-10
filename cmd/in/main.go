@@ -9,6 +9,7 @@ import (
 
 	helper "github.com/mschuchard/concourse-vault-resource/cmd"
 	"github.com/mschuchard/concourse-vault-resource/concourse"
+	"github.com/mschuchard/concourse-vault-resource/enum"
 	"github.com/mschuchard/concourse-vault-resource/vault"
 )
 
@@ -40,7 +41,7 @@ func main() {
 			// iterate through secret params' paths and assign each to each vault secret path
 			for _, secretPath := range secretParams.Paths {
 				// initialize vault secret from concourse params
-				secret, nestedErr := vault.NewVaultSecret(secretParams.Engine, mount, secretPath)
+				secret, nestedErr := vault.NewVaultSecret(enum.SecretEngine(secretParams.Engine), mount, secretPath)
 				// on failure log the issue and then attempt next secret
 				if nestedErr != nil {
 					log.Print("failed to construct secret from Concourse parameters")
@@ -66,7 +67,7 @@ func main() {
 		}
 	} else { // read secret from source
 		// initialize vault secret from concourse source params
-		secret, nestedErr := vault.NewVaultSecret(secretSource.Engine, secretSource.Mount, secretSource.Path)
+		secret, nestedErr := vault.NewVaultSecret(enum.SecretEngine(secretSource.Engine), secretSource.Mount, secretSource.Path)
 		// on failure log the issue and then attempt next secret
 		if nestedErr != nil {
 			log.Print("failed to construct secret from Concourse source parameters")

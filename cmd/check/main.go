@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/mschuchard/concourse-vault-resource/concourse"
+	"github.com/mschuchard/concourse-vault-resource/enum"
 	"github.com/mschuchard/concourse-vault-resource/vault"
 )
 
@@ -44,7 +45,7 @@ func main() {
 	}
 
 	// initialize vault secret from concourse source params and invoke constructor
-	secret, err := vault.NewVaultSecret(secretSource.Engine, secretSource.Mount, secretSource.Path)
+	secret, err := vault.NewVaultSecret(enum.SecretEngine(secretSource.Engine), secretSource.Mount, secretSource.Path)
 	if err != nil {
 		log.Print("failed to construct secret from Concourse source parameters")
 		log.Fatal(err)
