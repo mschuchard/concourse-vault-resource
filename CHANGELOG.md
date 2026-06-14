@@ -1,4 +1,4 @@
-### 1.3.1 (Next)
+### 1.3.1
 - Properly model nested struct fields as optional when documented as such.
 - Improve required parameter validation.
 - Fix issues occurring during `check` step when `version` parameter is omitted.

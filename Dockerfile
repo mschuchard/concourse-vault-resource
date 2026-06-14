@@ -3,7 +3,7 @@ WORKDIR /go/src/github.com/mschuchard/concourse-vault-resource
 COPY . .
 RUN apk add make && make release
 
-FROM alpine:3.23
+FROM alpine:3.24
 WORKDIR /opt/resource
 COPY --from=build /go/src/github.com/mschuchard/concourse-vault-resource/check .
 COPY --from=build /go/src/github.com/mschuchard/concourse-vault-resource/in .
