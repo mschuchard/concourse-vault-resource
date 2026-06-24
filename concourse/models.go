@@ -171,7 +171,7 @@ func NewInRequest(pipelineJSON io.Reader) (*inRequest, error) {
 func NewResponse() *response {
 	// return initialized reference
 	return &response{
-		Version:  map[string]string{},
+		Version:  responseVersion{},
 		Metadata: []MetadataEntry{},
 	}
 }

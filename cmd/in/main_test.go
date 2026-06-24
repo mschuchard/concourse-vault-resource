@@ -24,7 +24,7 @@ func Example() {
 	}
 }
 
-func Test(test *testing.T) {
+func TestInMain(test *testing.T) {
 	// defer stdin close and establish workdir from args[1]
 	defer os.Stdin.Close()
 	os.Args[1] = "/opt/resource"
