@@ -57,6 +57,12 @@ func NewVaultClient(source concourse.Source) (*vault.Client, error) {
 		return nil, err
 	}
 
+	// set namespace if specified
+	if len(source.Namespace) > 0 {
+		log.Printf("using Vault namespace: %s", source.Namespace)
+		client.SetNamespace(source.Namespace)
+	}
+
 	// verify vault is unsealed
 	sealStatus, err := client.Sys().SealStatus()
 	if err != nil {

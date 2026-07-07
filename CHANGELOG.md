@@ -1,3 +1,6 @@
+### 1.4.0 (Next)
+- Add support for Vault Enterprise namespaces.
+
 ### 1.3.1
 - Properly model nested struct fields as optional when documented as such.
 - Improve required parameter validation.
