@@ -27,6 +27,7 @@ type Source struct {
 	VaultRole  string          `json:"vault_role,omitempty"`
 	SecretID   string          `json:"secret_id,omitempty"`
 	Token      string          `json:"token,omitempty"`
+	Namespace  string          `json:"namespace,omitempty"`
 	Secret     *SecretSource   `json:"secret,omitempty"`
 }
 
