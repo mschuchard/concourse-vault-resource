@@ -5,13 +5,30 @@ import (
 	"maps"
 	"os"
 	"slices"
+	"strings"
 	"testing"
 )
 
-const versionKey = "secret-foo/bar"
+var (
+	respVersion = map[string]string{versionKey: "1"}
+	version     = Version{Version: "1"}
+)
 
-var respVersion = map[string]string{versionKey: "1"}
-var version = Version{Version: "1"}
+const (
+	versionKey = "secret-foo/bar"
+
+	// embedded json fixtures for edge case coverage
+	malformedJSON            = `{"source":`
+	noAuthEngineJSON         = `{"source":{}}`
+	nilSecretSourceJSON      = `{"source":{"auth_engine":"token"}}`
+	kv1WithVersionJSON       = `{"source":{"auth_engine":"token","secret":{"engine":"kv1","mount":"kv","path":"foo/bar"}},"version":{"version":"1"}}`
+	validLeaseIdJSON         = `{"source":{"auth_engine":"token","secret":{"engine":"kv2","mount":"secret","path":"foo/bar","lease_id":"12345678-1234-1234-1234-123456789abc"}}}`
+	dualSecretsJSON          = `{"source":{"auth_engine":"token","secret":{"engine":"kv2","mount":"secret","path":"foo/bar"}},"params":{"kv":{"engine":"kv1","paths":["foo/bar"]}}}`
+	noSecretsJSON            = `{"source":{"auth_engine":"token"}}`
+	versionWithParamsJSON    = `{"source":{"auth_engine":"token"},"params":{"kv":{"engine":"kv1","paths":["foo/bar"]}},"version":{"version":"1"}}`
+	emptyParamsJSON          = `{"source":{"auth_engine":"token"}}`
+	secretInSourceForOutJSON = `{"source":{"auth_engine":"token","secret":{"engine":"kv2","mount":"secret","path":"foo/bar"}},"params":{"kv":{"engine":"kv1","patch":false,"secrets":{"foo/bar":{"key":"value"}}}}}`
+)
 
 // test checkrequest constructor
 func TestCheckRequest(test *testing.T) {
@@ -49,6 +66,28 @@ func TestCheckRequest(test *testing.T) {
 
 	if _, err = NewCheckRequest(pipelineJSON); err == nil || err.Error() != "invalid lease id parameter" {
 		test.Error("invalid lease id parameter value did not fail validation")
+	}
+
+	if _, err := NewCheckRequest(strings.NewReader(malformedJSON)); err == nil {
+		test.Error("expected a decode error for malformed JSON")
+	}
+
+	if _, err := NewCheckRequest(strings.NewReader(noAuthEngineJSON)); err == nil || err.Error() != "no auth engine specified" {
+		test.Errorf("expected error: no auth engine specified, actual: %v", err)
+	}
+
+	if _, err := NewCheckRequest(strings.NewReader(nilSecretSourceJSON)); err != nil {
+		test.Error("check request with a nil source secret should not error")
+		test.Error(err)
+	}
+
+	if _, err := NewCheckRequest(strings.NewReader(kv1WithVersionJSON)); err == nil || err.Error() != "secret version specified with kv1" {
+		test.Errorf("expected error: secret version specified with kv1, actual: %v", err)
+	}
+
+	if _, err := NewCheckRequest(strings.NewReader(validLeaseIdJSON)); err != nil {
+		test.Error("check request with a valid lease id should not error")
+		test.Error(err)
 	}
 }
 
@@ -92,6 +131,27 @@ func TestNewInRequest(test *testing.T) {
 		test.Error("in request constructor returned unexpected values")
 		test.Errorf("expected Source field to be %v, actual: %v", expectedSource, source)
 		test.Errorf("expected Params field to be %v, actual: %v", expectedParams, params)
+	}
+
+	if _, err := NewInRequest(strings.NewReader(malformedJSON)); err == nil {
+		test.Error("expected a decode error for malformed JSON")
+	}
+
+	if _, err := NewInRequest(strings.NewReader(noAuthEngineJSON)); err == nil || err.Error() != "no auth engine specified" {
+		test.Errorf("expected error: no auth engine specified, actual: %v", err)
+	}
+
+	if _, err := NewInRequest(strings.NewReader(dualSecretsJSON)); err == nil || err.Error() != "dual secrets specified" {
+		test.Errorf("expected error: dual secrets specified, actual: %v", err)
+	}
+
+	if _, err := NewInRequest(strings.NewReader(noSecretsJSON)); err == nil || err.Error() != "no secrets specified" {
+		test.Errorf("expected error: no secrets specified, actual: %v", err)
+	}
+
+	if _, err := NewInRequest(strings.NewReader(versionWithParamsJSON)); err != nil {
+		test.Error("in request with version and params both specified should not error")
+		test.Error(err)
 	}
 }
 
@@ -137,6 +197,23 @@ func TestNewOutRequest(test *testing.T) {
 		test.Error("out request constructor returned unexpected values")
 		test.Errorf("expected Source field to be %v, actual: %v", expectedSource, source)
 		test.Errorf("expected Params field to be %v, actual: %v", expectedParams, params)
+	}
+
+	if _, err := NewOutRequest(strings.NewReader(malformedJSON)); err == nil {
+		test.Error("expected a decode error for malformed JSON")
+	}
+
+	if _, err := NewOutRequest(strings.NewReader(noAuthEngineJSON)); err == nil || err.Error() != "no auth engine specified" {
+		test.Errorf("expected error: no auth engine specified, actual: %v", err)
+	}
+
+	if _, err := NewOutRequest(strings.NewReader(emptyParamsJSON)); err == nil || err.Error() != "empty params" {
+		test.Errorf("expected error: empty params, actual: %v", err)
+	}
+
+	if _, err := NewOutRequest(strings.NewReader(secretInSourceForOutJSON)); err != nil {
+		test.Error("out request with a secret specified in source should not error")
+		test.Error(err)
 	}
 }
 
