@@ -164,17 +164,38 @@ func authClient(source concourse.Source, client *vault.Client) error {
 		// assign default auth amount if necessary and validate parameters
 		authMount = checkAuthParams(authMount, token, engine)
 
-		// validate role_id and secret_id are provided
-		if len(source.VaultRole) == 0 || len(secretID) == 0 {
-			log.Print("both vault_role and secret_id must be specified for AppRole authentication")
+		// validate role_id and secret_id/wrap_token are provided
+		if len(source.VaultRole) == 0 || (len(secretID) == 0 && len(source.WrapToken) == 0) {
+			log.Print("vault_role must be specified for AppRole authentication")
 			return errors.New("approle credentials absent")
 		}
 
+		// initialize credentials and login for push and pull
+		var secretID approle.SecretID
+		var loginOptions []approle.LoginOption
+
+		// determine push or pull and assign accordingly
+		switch {
+		// pull
+		case len(source.WrapToken) > 0:
+			secretID = approle.SecretID{FromString: source.WrapToken}
+			loginOptions = append(loginOptions, approle.WithWrappingToken())
+		// push
+		case len(source.SecretID) > 0:
+			secretID = approle.SecretID{FromString: source.SecretID}
+		// neither which is obviously an error
+		default:
+			log.Print("one of secret_id or wrap_token must be specified for AppRole authentication")
+			return errors.New("approle credentials absent")
+		}
+
+		// append mount path to login options
+		loginOptions = append(loginOptions, approle.WithMountPath(authMount))
 		// authenticate with approle
 		appRoleAuth, err := approle.NewAppRoleAuth(
 			source.VaultRole,
-			&approle.SecretID{FromString: secretID},
-			approle.WithMountPath(authMount),
+			&secretID,
+			loginOptions...,
 		)
 		if err != nil {
 			log.Print("unable to initialize AppRole authentication")

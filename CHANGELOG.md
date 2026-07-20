@@ -1,5 +1,6 @@
 ### 1.4.0 (Next)
 - Add support for Vault Enterprise namespaces.
+- Add support for Vault AppRole authentication in "pull" mode.
 
 ### 1.3.1
 - Properly model nested struct fields as optional when documented as such.
@@ -8,7 +9,7 @@
 
 ### 1.3.0
 - Support Vault Kubernetes authentication method.
-- Support Vault AppRole authentication method.
+- Support Vault AppRole authentication method in "push" mode.
 - `auth_engine` source parameter now required and not optional.
 - Generalize authentication parameters to `auth_mount` and `vault_role`.
 
