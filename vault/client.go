@@ -11,6 +11,7 @@ import (
 	vault "github.com/hashicorp/vault/api"
 	"github.com/hashicorp/vault/api/auth/approle"
 	"github.com/hashicorp/vault/api/auth/aws"
+	"github.com/hashicorp/vault/api/auth/azure"
 	"github.com/hashicorp/vault/api/auth/kubernetes"
 
 	"github.com/mschuchard/concourse-vault-resource/concourse"
@@ -160,6 +161,34 @@ func authClient(source concourse.Source, client *vault.Client) error {
 
 		// utilize aws authentication with vault client
 		return loginWithMethod(client, awsAuth, engine)
+	case enum.AzureIMDS:
+		// assign default auth mount if necessary and validate parameters
+		authMount = checkAuthParams(authMount, token, engine)
+
+		// azure role is a required positional argument to NewAzureAuth
+		if len(vaultRole) == 0 {
+			log.Print("a Vault role must be specified for the Azure authentication method")
+			return errors.New("no azure vault role specified")
+		}
+
+		// mount path is always applied
+		loginOptions := []azure.LoginOption{azure.WithMountPath(authMount)}
+		// resource is only needed for non-default azure clouds (e.g. gov and china)
+		if len(source.AzResource) > 0 {
+			// use explicitly specified azure resource url for authentication
+			log.Printf("using non-default Azure resource URL %s for authentication", source.AzResource)
+			loginOptions = append(loginOptions, azure.WithResource(source.AzResource))
+		}
+
+		// authenticate with azure managed identity
+		azureAuth, err := azure.NewAzureAuth(vaultRole, loginOptions...)
+		if err != nil {
+			log.Print("unable to initialize Vault Azure IMDS authentication")
+			return err
+		}
+
+		// utilize azure authentication with vault client
+		return loginWithMethod(client, azureAuth, engine)
 	case enum.AppRole:
 		// assign default auth amount if necessary and validate parameters
 		authMount = checkAuthParams(authMount, token, engine)
