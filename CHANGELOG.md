@@ -1,7 +1,7 @@
-### 1.4.0 (Next)
+### 1.4.0
 - Add support for Vault Enterprise namespaces.
 - Add support for Vault AppRole authentication in "pull" mode.
-- Support Vault GCP authentication method.
+- Support Vault Azure IMDS authentication method.
 
 ### 1.3.1
 - Properly model nested struct fields as optional when documented as such.

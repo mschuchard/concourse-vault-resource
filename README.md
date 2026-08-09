@@ -11,7 +11,7 @@ This repository and project is based on the work performed for [MITODL](https://
 ### `source`: designates the Vault server and authentication engine information
 
 **parameters**
-- `auth_engine`: _required_ The authentication engine for use with Vault. Allowed values are `approle`, `aws`, `kubernetes`, or `token`.
+- `auth_engine`: _required_ The authentication engine for use with Vault. Allowed values are `approle`, `aws`, `azure`, `kubernetes`, or `token`. The Azure engine requires the Concourse worker to be running on Azure infrastructure with a managed identity attached and network access to IMDS.
 
 - `address`: _optional_ The address for the Vault server in format of `URL:PORT`. default: `http://127.0.0.1:8200`
 
@@ -19,15 +19,21 @@ This repository and project is based on the work performed for [MITODL](https://
 
 - `vault_role`: _optional_ The Vault role for the authentication login to Vault. Parameter is ignored if the authentication engine is `token`. Note that this is indeed equivalent to the Vault `role_id` for the `approle` method. Relying on any of the default values for this parameter is generally not recommended unless utilizing AWS IAM instance roles where Concourse agents exist. defaults:
 - - approle: Vault attempts to deduce this based on the implied role name associated with it
-- - aws: Vault role in utilized AWS authentication engine with the same name as the current utilized AWS IAM Role
+- - aws: Vault role in utilized AWS authentication engine with the same name as the current utilized AWS IAM principal (role or user)
+- - azure: none because this parameter is mandatory for the Azure authentication engine
 - - kubernetes: Vault role associated with Kubernetes service account with the default token location
 
-
 - `secret_id`: _optional_ The secret id for the `approle` push authenticaion method. Parameter is ignored if the authentication engine is anything other than `approle`. default: empty string
+
+- `wrap_token`: _optional_ The wrap token for the `approle` pull authentication method whereby Vault unwraps this to produce the `secret_id` instead. Parameter is ignored if the authentication engine is anything other than `approle`. default: empty string
+
+- `azure_resource`: _optional_ The Azure resource URL for the `azure` authentication method. Parameter is ignored if the authentication engine is anything other than `azure`. This is mostly necessary for non-default Azure clouds (e.g. gov and china). default: empty string
 
 - `token`: _optional_ The token for the token authentication engine. Required if `auth_engine` parameter is `token`. default: empty string
 
 - `insecure`: _optional_ Whether to utilize an insecure connection with Vault (e.g. no HTTP or HTTPS with self-signed cert). default: `false`
+
+- `namespace`: _optional_ The target namespace for configuring the Vault client when interfacing with the Vault server (Enterprise only). default: empty string
 
 - `secret`: _optional_ Required for `check` step if user intent is automatically renewing a dynamic secret/credential (this occurs when a non-KV secret is input for this value), and/or specifying an exact version of a KV2 secret (otherwise latest; see below `version` subsection). **Automatic renewal of dynamic secrets is a beta feature.** KV1 secrets are ignored due to lack of versioning support in Vault.  Mutually exclusive with `params` for `in` step, but one of the two must be specified ("exclusive or" conditional). Note this value is ignored during `out` as it is not possible for it to have any effect with that step's functionality. The following YAML schema is required for the secret specification. default: `nil`
 
@@ -168,7 +174,7 @@ resource_types:
 - name: vault
   type: docker-image
   source:
-    repository: matthewschuchard/concourse-vault-resource:1.3
+    repository: matthewschuchard/concourse-vault-resource:1.4
     tag: latest
 
 resources:
@@ -177,6 +183,7 @@ resources:
   source:
     address: https://mitodl.vault.com:8200
     auth_engine: aws
+    namespace: root
 - name: vault-secret-check
   type: vault
   source:

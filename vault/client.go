@@ -94,6 +94,7 @@ func authClient(source concourse.Source, client *vault.Client) error {
 	secretID := source.SecretID
 	engine, err := source.AuthEngine.New()
 	if err != nil {
+		log.Printf("invalid vault authentication engine %s specified", source.AuthEngine)
 		return err
 	}
 
@@ -194,7 +195,7 @@ func authClient(source concourse.Source, client *vault.Client) error {
 		authMount = checkAuthParams(authMount, token, engine)
 
 		// validate role_id and secret_id/wrap_token are provided
-		if len(source.VaultRole) == 0 || (len(secretID) == 0 && len(source.WrapToken) == 0) {
+		if len(source.VaultRole) == 0 {
 			log.Print("vault_role must be specified for AppRole authentication")
 			return errors.New("approle credentials absent")
 		}
@@ -234,7 +235,7 @@ func authClient(source concourse.Source, client *vault.Client) error {
 		// authenticate with vault approle
 		return loginWithMethod(client, appRoleAuth, engine)
 	default:
-		log.Printf("%s was input as the authentication engine, but it is not currently supported", engine)
+		log.Printf("%s was input as the authentication engine, but it is not currently supported", source.AuthEngine)
 		return errors.New("invalid Vault authentication engine")
 	}
 
