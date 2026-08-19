@@ -80,7 +80,7 @@ func TestAuthClient(test *testing.T) {
 		test.Errorf("expected error (contains): error calling Azure token endpoint, actual: %v", err)
 	}
 
-	// retrieve role id and secret id for testing approle auth
+	// retrieve role id and secret id for testing approle auth in "push" mode
 	roleID, err := util.VaultClient.Logical().Read("auth/approle/role/myAppRole/role-id")
 	if err != nil {
 		test.Error("failed to retrieve role ID for approle auth")
@@ -96,6 +96,34 @@ func TestAuthClient(test *testing.T) {
 
 	if err := authClient(approleSourceConfig, util.VaultClient); err != nil {
 		test.Error("authenticating a vault client with approle config errored")
+		test.Error(err)
+	}
+
+	// reset client auth to prep for next test
+	util.VaultClient.SetToken(util.VaultToken)
+
+	// retrieve a wrapped secret id for testing approle auth in "pull" mode
+	util.VaultClient.SetWrappingLookupFunc(func(operation, path string) string {
+		if path == "auth/approle/role/myAppRole/secret-id" {
+			return "60s"
+		}
+		return ""
+	})
+	wrappedSecretID, err := util.VaultClient.Logical().Write("auth/approle/role/myAppRole/secret-id", nil)
+	// reset the wrapping lookup func immediately so it does not affect subsequent requests
+	util.VaultClient.SetWrappingLookupFunc(nil)
+	if err != nil {
+		test.Error("failed to retrieve wrapped secret ID for approle pull auth")
+		test.Error(err)
+	}
+	// access wrapping token from wrapped secret id and assign to source config
+	if wrappedSecretID == nil || wrappedSecretID.WrapInfo == nil || len(wrappedSecretID.WrapInfo.Token) == 0 {
+		test.Error("the secret id write did not return a wrapped response")
+	}
+	approleSourceConfig.WrapToken = wrappedSecretID.WrapInfo.Token
+
+	if err := authClient(approleSourceConfig, util.VaultClient); err != nil {
+		test.Error("authenticating a vault client with approle pull (wrapping token) config errored")
 		test.Error(err)
 	}
 
