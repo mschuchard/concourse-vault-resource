@@ -1,3 +1,6 @@
+### 1.4.1 (Next)
+- Minor optimizations to Vault client authentication validation.
+
 ### 1.4.0
 - Add support for Vault Enterprise namespaces.
 - Add support for Vault AppRole authentication in "pull" mode.
