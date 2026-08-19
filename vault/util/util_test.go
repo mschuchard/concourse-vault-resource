@@ -31,7 +31,8 @@ func TestBootstrap(test *testing.T) {
 	VaultClient.Sys().Mount(KV1Mount, &vault.MountInput{Type: "kv"})
 
 	// modify new kv secrets engine to be version 1
-	VaultClient.Sys().TuneMount(KV1Mount, vault.MountConfigInput{PluginVersion: "1"})
+	pluginVersion := "1"
+	VaultClient.Sys().TuneMountAllowNil(KV1Mount, vault.TuneMountConfigInput{PluginVersion: &pluginVersion})
 
 	// put kv1 and kv2 secrets
 	VaultClient.KVv1(KV1Mount).Put(

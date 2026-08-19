@@ -80,20 +80,8 @@ func TestAuthClient(test *testing.T) {
 		test.Errorf("expected error (contains): error calling Azure token endpoint, actual: %v", err)
 	}
 
-	// retrieve role id and secret id for testing approle auth in "push" mode
-	roleID, err := util.VaultClient.Logical().Read("auth/approle/role/myAppRole/role-id")
-	if err != nil {
-		test.Error("failed to retrieve role ID for approle auth")
-		test.Error(err)
-	}
-	secretID, err := util.VaultClient.Logical().Write("auth/approle/role/myAppRole/secret-id", nil)
-	if err != nil {
-		test.Error("failed to retrieve secret ID for approle auth")
-		test.Error(err)
-	}
-	approleSourceConfig.VaultRole = roleID.Data["role_id"].(string)
-	approleSourceConfig.SecretID = secretID.Data["secret_id"].(string)
-
+	approleSourceConfig.VaultRole = util.RoleID
+	approleSourceConfig.SecretID = util.SecretID
 	if err := authClient(approleSourceConfig, util.VaultClient); err != nil {
 		test.Error("authenticating a vault client with approle config errored")
 		test.Error(err)
