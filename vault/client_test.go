@@ -20,6 +20,12 @@ var (
 		AuthEngine: enum.AWSIAM,
 		VaultRole:  "myIAMRole",
 	}
+	azSourceConfig = concourse.Source{
+		Address:    util.VaultAddress,
+		AuthEngine: enum.AzureIMDS,
+		VaultRole:  "myAzureRole",
+		AzResource: "https://management.azure.com/",
+	}
 	kubeSourceConfig = concourse.Source{
 		Address:    util.VaultAddress,
 		AuthEngine: enum.KubernetesSA,
@@ -69,6 +75,11 @@ func TestAuthClient(test *testing.T) {
 		test.Errorf("expected error (contains): error reading service account token from default location, actual: %v", err)
 	}
 
+	if err := authClient(azSourceConfig, util.VaultClient); err == nil || !strings.Contains(err.Error(), "error calling Azure token endpoint") {
+		test.Error("authenticating a vault client with azure did not error in the expected manner")
+		test.Errorf("expected error (contains): error calling Azure token endpoint, actual: %v", err)
+	}
+
 	// retrieve role id and secret id for testing approle auth
 	roleID, err := util.VaultClient.Logical().Read("auth/approle/role/myAppRole/role-id")
 	if err != nil {
@@ -108,6 +119,11 @@ func TestAuthClient(test *testing.T) {
 	kubeSourceConfig.VaultRole = ""
 	if err := authClient(kubeSourceConfig, util.VaultClient); err == nil || err.Error() != "no kubernetes vault role specified" {
 		test.Errorf("expected error: no kubernetes vault role specified, actual: %s", err)
+	}
+
+	azSourceConfig.VaultRole = ""
+	if err := authClient(azSourceConfig, util.VaultClient); err == nil || err.Error() != "no azure vault role specified" {
+		test.Errorf("expected error: no azure vault role specified, actual: %s", err)
 	}
 
 	approleSourceConfig.VaultRole = ""
