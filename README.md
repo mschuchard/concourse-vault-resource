@@ -17,7 +17,7 @@ This repository and project is based on the work performed for [MITODL](https://
 
 - `auth_mount`: _optional_ The mount path for the authentication engine. Parameter is ignored if the authentication engine is `token`. default: same value as `auth_engine`
 
-- `vault_role`: _optional_ The Vault role for the authentication login to Vault. Parameter is ignored if the authentication engine is `token`. Note that this is indeed also equivalent to the Vault `role_id` when using the `approle` method. Relying on any of the default values for this parameter is generally not recommended or even not allowed, unless utilizing AWS IAM instance roles where Concourse agents exist. defaults:
+- `vault_role`: _required/optional_ (only optional for `aws` authentication engine) The Vault role for the authentication login to Vault. Parameter is ignored if the authentication engine is `token`. Note that this is indeed also equivalent to the Vault `role_id` when using the `approle` method. Relying on any of the default values for this parameter is generally not recommended or even not allowed, unless utilizing AWS IAM instance roles where Concourse agents exist. defaults:
 - - aws: Vault role in utilized AWS authentication engine with the same name as the current utilized AWS IAM principal (role or user)
 
 - `secret_id`: _optional_ The secret id for the `approle` push authenticaion method. Parameter is ignored if the authentication engine is anything other than `approle`. default: empty string
@@ -121,7 +121,7 @@ database-readonly:
 {
   "secret-foo/bar": {
     "password": "supersecret",
-    "other_password:" "ultrasecret"
+    "other_password": "ultrasecret"
   },
   "database-readonly": {
     "username": "my_user",

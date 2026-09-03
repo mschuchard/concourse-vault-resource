@@ -79,7 +79,8 @@ func (secret *vaultSecret) retrieveKVSecret(client *vault.Client, version string
 			)
 		} else { // read specific version of kv2 secret
 			// validate version if input
-			versionInt, err := strconv.Atoi(version)
+			var versionInt int
+			versionInt, err = strconv.Atoi(version)
 			if err != nil {
 				log.Printf("KV2 version must be an integer, and %s was input instead", version)
 				// return empty values since error triggers at end of execution
