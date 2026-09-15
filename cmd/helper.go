@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 
 	"github.com/mschuchard/concourse-vault-resource/concourse"
@@ -19,7 +20,7 @@ func SecretsToJSONFile(filePath string, secretValues concourse.SecretValues) err
 		return err
 	}
 	// write secrets to file at /opt/resource/vault.json
-	secretsFile := filePath + "/vault.json"
+	secretsFile := filepath.Join(filePath, "/vault.json")
 	if err = os.WriteFile(secretsFile, secretsData, 0o600); err != nil {
 		log.Printf("error writing secrets to destination file at %s", secretsFile)
 		return err

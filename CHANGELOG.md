@@ -1,6 +1,8 @@
 ### 1.4.1 (Next)
 - Minor optimizations to Vault client authentication validation.
 - Improve dynamic secret lease ID validation.
+- Avoid variable collision with package during Vault address validation.
+- Safeguard secrets file output path determination.
 
 ### 1.4.0
 - Add support for Vault Enterprise namespaces.

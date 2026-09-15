@@ -25,7 +25,7 @@ func NewVaultClient(source concourse.Source) (*vault.Client, error) {
 		source.Address = "http://127.0.0.1:8200"
 	} else {
 		// vault address validation
-		if url, err := url.ParseRequestURI(source.Address); err != nil || len(url.Scheme) == 0 || len(url.Host) == 0 {
+		if parsedUrl, err := url.ParseRequestURI(source.Address); err != nil || len(parsedUrl.Scheme) == 0 || len(parsedUrl.Host) == 0 {
 			log.Printf("%s is not a valid Vault server address", source.Address)
 
 			// assign err if it is nil
