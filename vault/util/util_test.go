@@ -16,14 +16,22 @@ func TestBootstrap(test *testing.T) {
 	}
 
 	// enable auth: approle, aws, kubernetes (token enabled by default with dev server)
-	VaultClient.Sys().EnableAuthWithOptions("approle", &vault.EnableAuthOptions{Type: "approle"})
-	VaultClient.Logical().Write("auth/approle/role/myAppRole", map[string]any{
+	if err := VaultClient.Sys().EnableAuthWithOptions("approle", &vault.EnableAuthOptions{Type: "approle"}); err != nil {
+		test.Fatalf("failed to enable approle auth: %s", err)
+	}
+	if _, err := VaultClient.Logical().Write("auth/approle/role/"+AppRole, map[string]any{
 		"token_policies": "default",
 		"token_ttl":      "1h",
 		"token_max_ttl":  "4h",
-	})
-	VaultClient.Sys().EnableAuthWithOptions("aws", &vault.EnableAuthOptions{Type: "aws"})
-	VaultClient.Sys().EnableAuthWithOptions("kubernetes", &vault.EnableAuthOptions{Type: "kubernetes"})
+	}); err != nil {
+		test.Fatalf("failed to configure approle auth: %s", err)
+	}
+	if err := VaultClient.Sys().EnableAuthWithOptions("aws", &vault.EnableAuthOptions{Type: "aws"}); err != nil {
+		test.Fatalf("failed to enable aws auth: %s", err)
+	}
+	if err := VaultClient.Sys().EnableAuthWithOptions("kubernetes", &vault.EnableAuthOptions{Type: "kubernetes"}); err != nil {
+		test.Fatalf("failed to enable kubernetes auth: %s", err)
+	}
 
 	// enable secrets: database, aws, kv1 (kv2 enabled by default with dev server)
 	VaultClient.Sys().Mount("aws/", &vault.MountInput{Type: "aws"})

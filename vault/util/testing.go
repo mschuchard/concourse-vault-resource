@@ -10,6 +10,7 @@ import (
 const (
 	VaultAddress = "http://127.0.0.1:8200"
 	VaultToken   = "abcdefghijklmnopqrstuvwxyz09"
+	AppRole      = "myAppRole"
 	KVPath       = "foo/bar"
 	KVKey        = "password"
 	KVValue      = "supersecret"
@@ -35,12 +36,12 @@ func basicVaultClient() *vault.Client {
 // helper for approle auth
 func approleAttrs() (string, string, error) {
 	// retrieve role id and secret id for testing approle auth in "push" mode
-	roleID, err := VaultClient.Logical().Read("auth/approle/role/myAppRole/role-id")
+	roleID, err := VaultClient.Logical().Read("auth/approle/role/" + AppRole + "/role-id")
 	if err != nil {
 		log.Print("failed to retrieve role ID for approle auth")
 		return "", "", err
 	}
-	secretID, err := VaultClient.Logical().Write("auth/approle/role/myAppRole/secret-id", nil)
+	secretID, err := VaultClient.Logical().Write("auth/approle/role/"+AppRole+"/secret-id", nil)
 	if err != nil {
 		log.Print("failed to retrieve secret ID for approle auth")
 		return "", "", err
