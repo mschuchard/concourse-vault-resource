@@ -1,4 +1,4 @@
-### 1.4.1 (Next)
+### 1.4.1
 - Minor optimizations to Vault client authentication validation.
 - Improve dynamic secret lease ID validation.
 - Avoid variable collision with package during Vault address validation.
