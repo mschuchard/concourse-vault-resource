@@ -35,5 +35,5 @@ accept:
 	@go test -v ./cmd/check ./cmd/in ./cmd/out
 
 resource:
-	@docker build --pull -t matthewschuchard/concourse-vault-resource:${TAG} -t matthewschuchard/concourse-vault-resource:${TAG} .
+	@docker buildx build --pull -t matthewschuchard/concourse-vault-resource:${TAG} .
 	@docker push -a matthewschuchard/concourse-vault-resource

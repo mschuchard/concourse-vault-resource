@@ -1,5 +1,6 @@
 ### 1.4.2 (Next)
 - Error on dynamic secret renewal without lease id.
+- Expand permissiveness of Vault token validation.
 
 ### 1.4.1
 - Minor optimizations to Vault client authentication validation.

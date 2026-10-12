@@ -108,7 +108,7 @@ func authClient(source concourse.Source, client *vault.Client) error {
 		}
 
 		// validate vault token
-		if matched, _ := regexp.MatchString(`^[a-zA-Z0-9.]+$`, token); !matched {
+		if matched, _ := regexp.MatchString(`^[a-zA-Z0-9._-]+$`, token); !matched {
 			log.Print("the specified Vault Token is invalid")
 			return errors.New("invalid vault token")
 		}
