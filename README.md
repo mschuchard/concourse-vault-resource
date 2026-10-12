@@ -171,8 +171,8 @@ resource_types:
 - name: vault
   type: docker-image
   source:
-    repository: matthewschuchard/concourse-vault-resource:1.4
-    tag: latest
+    repository: matthewschuchard/concourse-vault-resource
+    tag: 1.4
 
 resources:
 - name: vault

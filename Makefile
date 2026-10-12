@@ -23,7 +23,7 @@ bootstrap:
 	@rm -f nohup.out
 	# using cli for this avoids importing the entire vault/command package
 	@nohup vault server -dev -dev-root-token-id="abcdefghijklmnopqrstuvwxyz09" &
-	@go test -v -run TestBootstrap ./vault/util
+	@go test -count=1 -v -run TestBootstrap ./vault/util
 
 shutdown:
 	@killall vault
