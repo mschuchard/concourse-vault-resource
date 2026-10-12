@@ -65,6 +65,11 @@ func TestRenew(test *testing.T) {
 	}
 
 	dynamicSecret := vaultSecret{dynamic: true, mount: "mount", path: "path"}
+	if _, err := dynamicSecret.Renew(util.VaultClient, ""); err == nil || err.Error() != "empty lease id" {
+		test.Error("renew did not return expected error for failed secret renewal")
+		test.Errorf("expected: empty lease id, actual: %s", err)
+	}
+
 	if _, err := dynamicSecret.Renew(util.VaultClient, "suffix"); err == nil || err.Error() != "failed to renew secret lease" {
 		test.Error("renew did not return expected error for failed secret renewal")
 		test.Errorf("expected: failed to renew secret lease, actual: %s", err)

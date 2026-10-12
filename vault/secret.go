@@ -102,6 +102,12 @@ func (secret *vaultSecret) Renew(client *vault.Client, leaseIdSuffix string) (Me
 		return Metadata{}, errors.New("non-renewable secret")
 	}
 
+	// validate lease id is not empty
+	if len(leaseIdSuffix) == 0 {
+		log.Print("a 'lease_id' parameter is required for dynamic secret renewal, but none was specified as an input")
+		return Metadata{}, errors.New("empty lease id")
+	}
+
 	// determine full lease id
 	leaseId := secret.mount + "/creds/" + secret.path + "/" + leaseIdSuffix
 
