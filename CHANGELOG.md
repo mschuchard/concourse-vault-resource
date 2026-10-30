@@ -1,6 +1,7 @@
 ### 1.4.2 (Next)
 - Error on dynamic secret renewal without lease id.
 - Expand permissiveness of Vault token validation.
+- Fix secret identifier in `in` step when `mount` is omitted from `source`.
 
 ### 1.4.1
 - Minor optimizations to Vault client authentication validation.

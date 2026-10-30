@@ -72,6 +72,10 @@ func (secret *vaultSecret) Dynamic() bool {
 	return secret.dynamic
 }
 
+func (secret *vaultSecret) Mount() string {
+	return secret.mount
+}
+
 // return secret value, version, metadata, and possible error (GET/READ/READ)
 func (secret *vaultSecret) SecretValue(client *vault.Client, version string) (map[string]any, Metadata, error) {
 	if secret.dynamic {

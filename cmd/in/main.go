@@ -77,7 +77,7 @@ func main() {
 			err = errors.Join(err, nestedErr)
 		} else {
 			// declare identifier and rawSecret
-			identifier := secretSource.Mount + "-" + secretSource.Path
+			identifier := secret.Mount() + "-" + secretSource.Path
 			// return and assign the secret values for the given path
 			secretValues[identifier], secretMetadata, nestedErr = secret.SecretValue(vaultClient, inRequest.Version.Version)
 			inResponse.Version[identifier] = secretMetadata.Version
