@@ -58,7 +58,8 @@ func (secret *vaultSecret) retrieveKVSecret(client *vault.Client, version string
 
 	switch secret.engine {
 	case enum.KeyValue1:
-		if len(version) > 0 {
+		// dummy value is either empty string or "0"
+		if len(version) > 0 && version != "0" {
 			log.Print("versions cannot be used with the KV1 secrets engine, and the input parameter will be ignored")
 		}
 		// read kv secret
