@@ -51,54 +51,59 @@ func main() {
 		log.Fatal(err)
 	}
 
-	// retrieve version for secret
-	_, secretMetadata, err := secret.SecretValue(vaultClient, "")
-	if err != nil {
-		log.Printf("version could not be retrieved for %s engine, %s mount, and path %s secret", secretSource.Engine, secretSource.Mount, secretSource.Path)
-		log.Fatal(err)
-	}
-
-	// initialize versions slice and get version of secret
-	getVersionInt, err := strconv.Atoi(secretMetadata.Version)
+	// initialize versions slice and secret metadata
+	var secretMetadata vault.Metadata
 	versions := []concourse.Version{}
 
-	// if getVersion could not be converted to int then this may be a dynamically generated credential
-	if err != nil {
-		if secret.Dynamic() {
-			// this is a dynamically generated credential so renew it
-			log.Printf("the secret '%s' is dynamic and will be renewed", secretSource.Path)
+	// renew a dynamic secret; otherwise continue with checking input version against the latest version of the secret
+	if secret.Dynamic() {
+		// this is a dynamically generated credential so renew it
+		log.Printf("the secret '%s' is dynamic and will be renewed", secretSource.Path)
 
-			secretMetadata, err = secret.Renew(vaultClient, secretSource.LeaseId)
-			if err != nil {
-				log.Printf("failed to renew dynamic secret for %s engine, %s mount, and path %s", secretSource.Engine, secretSource.Mount, secretSource.Path)
-				log.Fatal(err)
-			}
+		secretMetadata, err = secret.Renew(vaultClient, secretSource.LeaseId)
+		if err != nil {
+			log.Printf("failed to renew dynamic secret for %s engine, %s mount, and path %s", secretSource.Engine, secretSource.Mount, secretSource.Path)
+			log.Fatal(err)
 		}
 
 		// assign versions through returned metadata re-assignment during renewal
-		// OR dummy a return for the versions using the original metadata return
 		versions = []concourse.Version{{Version: secretMetadata.Version}}
 	} else {
-		// assign default input version, and check if version param specified
-		inputVersion := 0
-		if checkRequest.Version != nil {
-			// validate version if specified
-			if inputVersion, err = strconv.Atoi(checkRequest.Version.Version); err != nil {
-				log.Printf("the input version '%s' in source is not a valid integer", checkRequest.Version.Version)
-				log.Fatal(err)
-			}
+		// retrieve version for secret
+		_, secretMetadata, err = secret.SecretValue(vaultClient, "")
+		if err != nil {
+			log.Printf("version could not be retrieved for %s engine, %s mount, and path %s secret", secretSource.Engine, secretSource.Mount, secretSource.Path)
+			log.Fatal(err)
 		}
 
-		// validate that the input version is <= the latest retrieved version
-		if inputVersion > getVersionInt {
-			log.Printf("the input version %d is later than the retrieved version %s", inputVersion, secretMetadata.Version)
-			log.Print("only the retrieved version will be returned to Concourse")
-
+		// retrieve version of secret
+		getVersionInt, err := strconv.Atoi(secretMetadata.Version)
+		if err != nil {
+			// dummy a return for the versions using the original metadata return
+			log.Printf("the retrieved version '%s' is not a valid integer for a kv2 secret", secretMetadata.Version)
 			versions = []concourse.Version{{Version: secretMetadata.Version}}
 		} else {
-			// populate versions slice with delta
-			for versionDelta := inputVersion; versionDelta <= getVersionInt; versionDelta++ {
-				versions = append(versions, concourse.Version{Version: strconv.Itoa(versionDelta)})
+			// assign default input version, and check if version param specified
+			inputVersion := 0
+			if checkRequest.Version != nil {
+				// validate version if specified
+				if inputVersion, err = strconv.Atoi(checkRequest.Version.Version); err != nil {
+					log.Printf("the input version '%s' in source is not a valid integer", checkRequest.Version.Version)
+					log.Fatal(err)
+				}
+			}
+
+			// validate that the input version is <= the latest retrieved version
+			if inputVersion > getVersionInt {
+				log.Printf("the input version %d is later than the retrieved version %s", inputVersion, secretMetadata.Version)
+				log.Print("only the retrieved version will be returned to Concourse")
+
+				versions = []concourse.Version{{Version: secretMetadata.Version}}
+			} else {
+				// populate versions slice with delta
+				for versionDelta := inputVersion; versionDelta <= getVersionInt; versionDelta++ {
+					versions = append(versions, concourse.Version{Version: strconv.Itoa(versionDelta)})
+				}
 			}
 		}
 	}

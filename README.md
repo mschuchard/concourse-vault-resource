@@ -169,7 +169,7 @@ Below is the general structure of the generated Concourse metadata.
 ```yaml
 resource_types:
 - name: vault
-  type: docker-image
+  type: registry-image
   source:
     repository: matthewschuchard/concourse-vault-resource
     tag: 1.4

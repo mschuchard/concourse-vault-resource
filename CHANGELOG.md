@@ -3,7 +3,8 @@
 - Expand permissiveness of Vault token validation.
 - Fix secret identifier in `in` step when `mount` is omitted from `source`.
 - Fix spurious warning when version is omitted for KV1 secret during `get`.
-- Fix consecutive renewals of dynamic secrets and prevent orphaned leases.
+- Fix consecutive renewals of dynamic secrets.
+- Fix orphaned credential generation during version check of dynamic secrets.
 
 ### 1.4.1
 - Minor optimizations to Vault client authentication validation.
