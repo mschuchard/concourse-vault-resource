@@ -195,27 +195,28 @@ func authClient(source concourse.Source, client *vault.Client) error {
 		authMount = checkAuthParams(authMount, token, engine)
 
 		// validate role_id and secret_id/wrap_token are provided
-		if len(source.VaultRole) == 0 {
+		if len(vaultRole) == 0 {
 			log.Print("vault_role must be specified for AppRole authentication")
 			return errors.New("approle credentials absent")
 		}
 
 		// initialize credentials and login for push and pull
-		var secretID approle.SecretID
+		var appRoleSecretID approle.SecretID
 		var loginOptions []approle.LoginOption
 
 		// determine push or pull and assign accordingly
 		switch {
-		case len(source.SecretID) > 0 && len(source.WrapToken) > 0:
+		// both which is an error
+		case len(secretID) > 0 && len(source.WrapToken) > 0:
 			log.Print("both secret_id and wrap_token were specified for AppRole authentication; push and pull are mutually exclusive")
-			return errors.New("approle credentials absent")
+			return errors.New("approle credentials ambiguous")
 		// pull
 		case len(source.WrapToken) > 0:
-			secretID = approle.SecretID{FromString: source.WrapToken}
+			appRoleSecretID = approle.SecretID{FromString: source.WrapToken}
 			loginOptions = append(loginOptions, approle.WithWrappingToken())
 		// push
-		case len(source.SecretID) > 0:
-			secretID = approle.SecretID{FromString: source.SecretID}
+		case len(secretID) > 0:
+			appRoleSecretID = approle.SecretID{FromString: secretID}
 		// neither which is obviously an error
 		default:
 			log.Print("one of secret_id or wrap_token must be specified for AppRole authentication")
@@ -226,8 +227,8 @@ func authClient(source concourse.Source, client *vault.Client) error {
 		loginOptions = append(loginOptions, approle.WithMountPath(authMount))
 		// authenticate with approle
 		appRoleAuth, err := approle.NewAppRoleAuth(
-			source.VaultRole,
-			&secretID,
+			vaultRole,
+			&appRoleSecretID,
 			loginOptions...,
 		)
 		if err != nil {
