@@ -75,9 +75,9 @@ func TestAuthClient(test *testing.T) {
 		test.Errorf("expected error (contains): error reading service account token from default location, actual: %v", err)
 	}
 
-	if err := authClient(azSourceConfig, util.VaultClient); err == nil || !strings.Contains(err.Error(), "error calling Azure token endpoint") {
+	if err := authClient(azSourceConfig, util.VaultClient); err == nil || !strings.Contains(err.Error(), "Azure token endpoint") {
 		test.Error("authenticating a vault client with azure did not error in the expected manner")
-		test.Errorf("expected error (contains): error calling Azure token endpoint, actual: %v", err)
+		test.Errorf("expected error (contains): Azure token endpoint, actual: %v", err)
 	}
 
 	approleSourceConfig.VaultRole = util.RoleID
@@ -110,6 +110,13 @@ func TestAuthClient(test *testing.T) {
 	}
 	approleSourceConfig.WrapToken = wrappedSecretID.WrapInfo.Token
 
+	// first test error for mutual exclusivity
+	if err := authClient(approleSourceConfig, util.VaultClient); err == nil || err.Error() != "approle credentials ambiguous" {
+		test.Errorf("expected error: approle credentials ambiguous, actual: %s", err)
+	}
+
+	// then remove secret id for pull testing
+	approleSourceConfig.SecretID = ""
 	if err := authClient(approleSourceConfig, util.VaultClient); err != nil {
 		test.Error("authenticating a vault client with approle pull (wrapping token) config errored")
 		test.Error(err)
@@ -140,6 +147,13 @@ func TestAuthClient(test *testing.T) {
 	azSourceConfig.VaultRole = ""
 	if err := authClient(azSourceConfig, util.VaultClient); err == nil || err.Error() != "no azure vault role specified" {
 		test.Errorf("expected error: no azure vault role specified, actual: %s", err)
+	}
+
+	// neither secret id nor wrap token
+	approleSourceConfig.VaultRole = util.RoleID
+	approleSourceConfig.WrapToken = ""
+	if err := authClient(approleSourceConfig, util.VaultClient); err == nil || err.Error() != "approle credentials absent" {
+		test.Errorf("expected error: approle credentials absent, actual: %s", err)
 	}
 
 	approleSourceConfig.VaultRole = ""
