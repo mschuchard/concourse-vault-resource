@@ -206,6 +206,9 @@ func authClient(source concourse.Source, client *vault.Client) error {
 
 		// determine push or pull and assign accordingly
 		switch {
+		case len(source.SecretID) > 0 && len(source.WrapToken) > 0:
+			log.Print("both secret_id and wrap_token were specified for AppRole authentication; push and pull are mutually exclusive")
+			return errors.New("approle credentials absent")
 		// pull
 		case len(source.WrapToken) > 0:
 			secretID = approle.SecretID{FromString: source.WrapToken}

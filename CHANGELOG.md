@@ -1,3 +1,6 @@
+### 1.4.3 (Next)
+- Validate AppRole push and pull not simultaneously specified.
+
 ### 1.4.2
 - Error on dynamic secret renewal without lease id.
 - Expand permissiveness of Vault token validation.
